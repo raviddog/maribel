@@ -1,0 +1,10 @@
+{
+  "name": "maribel",
+  "version": "1.2.2",
+  "description": "replay theatre discord bot",
+  "main": "maribel.js",
+  "author": "raviddog",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  }
+}
