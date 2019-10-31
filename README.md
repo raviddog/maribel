@@ -1,6 +1,6 @@
 # Readme
 
-A discord bot to help manage Touhou Replay Theatre, which is held (usually) every Sunday 7PM PST at [https://www.twitch.tv/claudeinthefog](https://www.twitch.tv/claudeinthefog). I'm not sure why I'm making this public. It's called Maribel because she's really cute and also because of some other inside joke that probably shouldn't be written here.
+A discord bot to help manage Touhou Replay Theatre. I'm not sure why I'm making this public. It's called Maribel because she's really cute and also because of some other inside joke that probably shouldn't be written here.
 
 ## How to use
 
