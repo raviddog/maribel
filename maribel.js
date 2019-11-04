@@ -147,7 +147,7 @@ commands.drop = function(n, message) {
         var num = parseInt(n);
         if(isNaN(num)) {
             if(0 < num && num  < replays.length) {
-                replays.splice(num, 1);
+                replays.splice(0, num);
                 sendMessageLog(message, "Dropped " + num + " replays", "Dropped " + num + " replays");
             } else {
                 replays = [];
