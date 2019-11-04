@@ -4,6 +4,7 @@
 		"master": "discord-id-of-bot-owner",
 		"vip": [],
 		"token": "your-discord-api-token",
-		"channel": "discord-channel-id"
+		"channel": "discord-channel-id",
+		"inviteLink": "https://discord.gg/4KsV6pw"
 	}
 }
