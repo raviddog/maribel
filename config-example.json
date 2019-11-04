@@ -1,0 +1,9 @@
+{
+	"discord": {
+		"game": "with Renko's hair",
+		"master": "discord-id-of-bot-owner",
+		"vip": [],
+		"token": "your-discord-api-token",
+		"channel": "discord-channel-id"
+	}
+}
