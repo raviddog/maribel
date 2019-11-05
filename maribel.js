@@ -12,6 +12,22 @@ const placeholder = {
     "msgid" : "sample"
 }
 */
+
+// singleton
+var Renko = null;
+
+module.exports = {
+    initialize: function() {
+        client.login(config.discord.token);
+    },
+    setRenko: function(r) {
+        Renko = r;
+    },
+    sendMessage: function(msg) {
+        sendMessageToChannel(config.discord.channel, msg);
+    }
+}
+
 var replays = [];
 var schedule = [];
 
@@ -89,6 +105,9 @@ client.on('message', message => {
                             break;
                         case 'add':
                             commands.add(args, message);
+                            break;
+                        case 'twitchsay':
+                            commands.twitchsay(args, message);
                             break;
                     }
                 }
@@ -198,6 +217,16 @@ commands.add = function(args, message) {
 commands.logs = function(message) {
     sendMessage(message, 'Logs:\n'+recentLogs.join('\n'));
 }
+commands.twitchsay = function(args, message) {
+    let channelName = args[1];
+    let text = args.slice(2).join(' ');
+    try {
+        Renko.sendMessage(channelName, text);
+    } catch (err) {
+        log(err);
+    }
+    log("twitchsay "+channelName+": "+text);
+}
 
 function formatReplay(index, replay) {
     return `\n-\n# ${index} ${replay.user} ${replay.url}\nMessage: ${replay.notes}`;
@@ -250,7 +279,11 @@ function saveReplays() {
 }
 
 function sendMessage(message, reply) {
-    client.channels.get(message.channel.id).send(reply)
+    sendMessageToChannel(message.channel.id, reply);    
+}
+
+function sendMessageToChannel(channelId, msg) {
+    client.channels.get(channelId).send(msg)
         .catch(log);
 }
 
@@ -277,4 +310,4 @@ function getDateTime() {
     return (new Date()).toISOString();
 }
 
-client.login(config.discord.token);
+
