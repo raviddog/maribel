@@ -10,6 +10,7 @@ A discord bot to help manage Touhou Replay Theatre. I'm not sure why I'm making 
 - `!remove #` - remove specified replay
 - `!drop (# | all)` - remove a number of replays from the top of the queue
 - `!add (link) (notes)` - manually add a non-replay link
+- TODO: document new commands
 
 ## Setup
 
@@ -17,7 +18,7 @@ You'll need a Discord bot account. There's a good article on how to make one [he
 You'll also need [node.js](https://nodejs.org/).
 
 - Clone or download the repo into a folder
-- Create a `config.json` file in the following format:
+- Create a `config.json` file similiar to the example json file included (TODO: doc new features):
 
 ```json
 {
@@ -28,5 +29,5 @@ You'll also need [node.js](https://nodejs.org/).
 }
 ```
 
-- Install discord.js with `node install discord.js`
+- Install discord.js with `node install discord.js` (`npm install` should work too!)
 - Run the bot with `node maribel`
