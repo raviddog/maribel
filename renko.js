@@ -8,8 +8,8 @@ channels.standard = config.renko.channels.standard.map(function (value) {
     return '#' + value;
 });
 channels.all = Array.from(channels.standard);
-channels.all.push(theaterChannel);
-channels.all.push(command);
+channels.all.push(channels.theatre);
+channels.all.push(channels.command);
 
 const client = new tmi.Client({
     options: { debug: true },
