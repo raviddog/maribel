@@ -286,8 +286,17 @@ function loadFromJson(filename) {
 }
 
 function saveToJson(filename, data) {
-    let fullFilename = filename+'.json'; 
+    let fullFilename = filename+'.json';
+    let backupFile = filename+Date.now()+'.json';
     fs.writeFile(fullFilename, data,
+        function(err) {
+            if (err) {
+                log(err);
+            } else {
+                // log(`Saved ${fullFilename} to disk`);
+            }
+    });
+    fs.writeFile(backupFile, data,
         function(err) {
             if (err) {
                 log(err);
