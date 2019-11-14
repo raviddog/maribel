@@ -47,7 +47,7 @@ var timer;
 
 var COMMAND_QUOTAS = {
     default: {
-        wait: 60000
+        wait: 30000
         // messageCount: 20
     }
 }
@@ -112,7 +112,7 @@ client.on('message', (channel, user, message, self) => {
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
                         break;
                     case '!schedule':
-                        sendNotImplemented(channel, args[0]);
+                        sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
                         break;
                 }
             }
