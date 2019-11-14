@@ -153,9 +153,6 @@ client.on('message', message => {
                         case 'swap':
                             commands.swap(args, message);
                             break;
-                        case 'twitchsay':
-                            commands.twitchsay(args, message);
-                            break;
                     }
                 }
 
