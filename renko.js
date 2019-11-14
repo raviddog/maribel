@@ -85,11 +85,11 @@ client.on('message', (channel, user, message, self) => {
 
     // commands
     if(message.substring(0,1) == '!') {
-        var args = message.slice(1).split(' ');
+        var args = message.split(' ');
         if(args.length > 0) {
             if(channels.standard.indexOf(channel) != -1) {
                 switch(args[0]) {
-                    case 'zunsvision':
+                    case '!zunsvision':
                         client.say(channel, 'ZUNsVision1 ZUNsVision2').catch(console.error);
                         setTimeout(function() {
                             client.say(channel, 'ZUNsVision3 ZUNsVision4').catch(console.error);
