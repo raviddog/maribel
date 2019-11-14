@@ -33,10 +33,15 @@ module.exports = {
     },
     devLog: function(s) {
         sendMessageToChannel(config.discord.logChannel, s);
+    },
+    // move replays?
+    getReplays: function() {
+        return replays;
     }
 }
 
 var replays = [];
+replays = loadFromJson('replays');
 var schedule = [];
 
 // hold recent logging info so we can query it from discord instead of server side
@@ -46,8 +51,6 @@ var recentLogs = [];
 client.on('ready', () => {
     log(`Logged in as ${client.user.tag}`);
     client.user.setActivity(config.discord.game, {type : 'PLAYING'});
-    replays = loadFromJson('replays');
-    schedule = loadFromJson('schedule');
 });
 
 client.on('messageDelete', message => {
@@ -113,6 +116,9 @@ client.on('message', message => {
                             break;
                         case 'add':
                             commands.add(args, message);
+                            break;
+                        case 'setDate':
+                            commands.setDate(args, message);
                             break;
                         case 'organize':
                             commands.organize(args, message);
@@ -244,11 +250,24 @@ commands.twitchsay = function(args, message) {
 commands.swap = function(args,message) {
     try {
         Keine.swapReplay(replays[args[1]], replays[args[2]]);
+        saveReplays();
         sendMessage(message, `Swapped replay #${args[1]} with #${args[2]}.`);
     } catch (err) {
         log(err.toString());
         sendMessage(message, `Error swapping`);
     }
+}
+commands.setDate = function(args,message) {
+    let r = replays[args[1]];
+    // TODO: error check me
+
+    r.theater_date = args[2];
+    r.theater_order = args[3];
+
+    saveReplays();
+
+    log("setDate "+JSON.stringify(r));
+    sendMessage(message, `setDate completed.`);
 }
 commands.organize = function(args, message) {
     Keine.organizeReplays(replays);

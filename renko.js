@@ -16,7 +16,7 @@ const client = new tmi.Client({
     channels: config.twitch.channels
 });
 
-console.log("config is",config.twitch,config.twitch.username);
+// console.log("config is",config.twitch,config.twitch.username);
 var Maribel = null;
 
 module.exports = {

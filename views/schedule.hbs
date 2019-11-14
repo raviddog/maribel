@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Touhou Repay Theater Schedule</title>
+	<style>
+
+	</style>
+</head>
+<body>
+<h1>TRT Extremely Beta Replay Schedule Listing</h1>
+<table border="1">
+	<thead>
+		<tr>
+			<th>Theater Date</th>
+			<th>User</th>
+			<th>URL</th>
+			<th>Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{#each replays}}
+		<tr>
+			<td>{{this.theater_date}}</td>
+			<td>{{this.user}}</td>
+			<td><a href="{{this.url}}">{{this.url}}</a></td>
+			<td>{{this.notes}}</td>
+		</tr>
+		{{/each}}
+	</tbody>
+</table>
+<pre>Page generated at: {{timestamp}}</pre>
+</body>
+</html>

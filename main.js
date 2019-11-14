@@ -21,5 +21,5 @@ Renko.initialize(IS_DEBUG_ON);
 
 if (IS_DEBUG_ON) {
 	// how do I test locally? without connect hope
-	Maribel.debugOrganize();
+	Keine.organizeReplays(Maribel.getReplays());
 }
