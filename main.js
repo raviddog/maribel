@@ -7,10 +7,12 @@ let config = require('./config.json');
 
 var Maribel = require('./maribel.js');
 var Renko = require('./renko.js');
+var Mamizou = require('./mamizou.js');
 var Keine = require('./keine.js');
 
 Maribel.setRenko(Renko);
 Renko.setMaribel(Maribel);
+Mamizou.setMaribel(Maribel);
 
 let IS_DEBUG_ON = config.DEBUG_MODE;
 
