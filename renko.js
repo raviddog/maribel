@@ -16,11 +16,14 @@ const client = new tmi.Client({
     channels: config.renko.channels
 });
 
-//console.log("config is",config.twitch,config.twitch.username);
+// console.log("config is",config.twitch,config.twitch.username);
 var Maribel = null;
 
 module.exports = {
-    initialize: function() {
+    initialize: function(isDebug) {
+        if (isDebug) {
+            return; // don't connect
+        }
         client.connect()
             .then(() => console.log("connected"))
             .catch(console.error)
