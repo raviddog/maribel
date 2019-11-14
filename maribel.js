@@ -321,11 +321,11 @@ function isChannel(id) {
 }
 
 function isMaster(id) {
-    return config.maribel.master.indexof(id) != -1;
+    return config.maribel.master.indexOf(id) != -1;
 }
 
 function isVIP(id) {
-    return config.maribel.VIP.indexof(id) != -1;
+    return config.maribel.VIP.indexOf(id) != -1;
 }
 
 function loadFromJson(filename) {
