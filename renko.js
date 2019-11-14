@@ -1,8 +1,6 @@
 const tmi = require('tmi.js');
 const config = require('./config.json');
 
-var channelactive = config.renko.channels;
-
 var channels = {};
 channels.theaterChannel = '#' + config.renko.channels.theatre;
 channels.command = '#' + config.renko.channels.command;
@@ -21,7 +19,7 @@ const client = new tmi.Client({
         username: config.renko.username,
         password: config.renko.oauth
     },
-    channels: config.renko.channels.all
+    channels: channels.all
 });
 
 // console.log("config is",config.renko,config.renko.username);
@@ -46,7 +44,6 @@ module.exports = {
 
     }
 }
-
 
 
 var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
@@ -212,7 +209,7 @@ function randomInt(a,b) {
 }
 
 function sendNotImplemented(channel, commandName) {
-    sendQuotaMessageToChannel(channel, 'notImplemented', channelName, `The ${commandName} command is not implemented. Scream at Baka to fix.`);
+    sendQuotaMessageToChannel('notImplemented', channel, `The ${commandName} command is not implemented. Scream at Baka to fix.`);
 }
 
 function getDateTime() {
