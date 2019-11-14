@@ -4,6 +4,7 @@ const config = require('./config.json');
 var fs = require('fs');
 
 let Keine = require('./keine.js');
+let moment = require('moment');
 
 // replay data structure
 /*
@@ -117,6 +118,9 @@ client.on('message', message => {
                         case 'add':
                             commands.add(args, message);
                             break;
+                        case 'bakaDumbFix':
+                            commands.dumbFix(args, message);
+                            break;
                         case 'setDate':
                             commands.setDate(args, message);
                             break;
@@ -149,19 +153,7 @@ client.on('message', message => {
 // command functions
 var commands = {};
 commands.replays = function(message) {
-    sendMessage(message, 'There are currently ' + (replays.length) + ' replays');
-    var msg = "";
-    replays.forEach(function (value, index) {
-        var s = formatReplay(index, value);
-        var newmsg = msg + s;
-        if(newmsg.length >= 2000) {
-            sendMessage(message, msg);
-            msg = s;
-        } else {
-            msg = newmsg;
-        }
-    });
-    sendMessageLog(message, msg, "Sent replays");
+    sendMessage(message, 'https://trt.mamizou.wtf/schedule');
 }
 commands.remove = function(n, message) {
     let num = parseInt(n);
@@ -273,6 +265,16 @@ commands.organize = function(args, message) {
     Keine.organizeReplays(replays);
     saveReplays();
     sendMessage(message, 'Organized replays.');
+}
+commands.dumbFix = function(args, message) {
+    for (let i = 0, ii = replays.length; i<ii; i++) {
+        let r = replays[i];
+        if (r.theater_date) {
+            r.theater_date = moment(r.theater_date).add(-4,'d').format("YYYY-MM-DD");
+        }
+    }
+    saveReplays();
+    sendMessage(message, 'Fixed bad replay init');
 }
 
 function formatReplay(index, replay) {
