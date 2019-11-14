@@ -3,6 +3,14 @@ const config = require('./config.json');
 
 var channelactive = config.renko.channels;
 
+var channels = {};
+channels.theaterChannel = '#' + config.renko.channels.theatre;
+channels.command = '#' + config.renko.channels.command;
+channels.standard = config.renko.chanenls.standard.map(function (value) {
+    return '#' + value;
+channels.all = channels.theaterChannel.concat(channels.command.concat(channels.standard));
+});
+
 const client = new tmi.Client({
     options: { debug: true },
     connection: {
@@ -13,7 +21,7 @@ const client = new tmi.Client({
         username: config.renko.username,
         password: config.renko.oauth
     },
-    channels: config.renko.channels
+    channels: config.renko.channels.alls
 });
 
 // console.log("config is",config.twitch,config.twitch.username);
@@ -39,13 +47,7 @@ module.exports = {
     }
 }
 
-var channels = {};
-channels.theaterChannel = '#' + config.renko.channels.theatre;
-channels.command = '#' + config.renko.channels.command;
-channels.standard = config.renko.chanenls.standard.map(function (value) {
-    return '#' + value;
-channels.all = channels.theaterChannel.concat(channels.command.concat(channels.standard));
-});
+
 
 var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
 
