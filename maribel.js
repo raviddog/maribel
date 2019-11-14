@@ -24,16 +24,16 @@ module.exports = {
         if (isDebug) {
             return;
         }
-        client.login(config.discord.token);
+        client.login(config.maribel.token);
     },
     setRenko: function(r) {
         Renko = r;
     },
     sendMessage: function(msg) {
-        sendMessageToChannel(config.discord.channel, msg);
+        sendMessageToChannel(config.maribel.channel, msg);
     },
     devLog: function(s) {
-        sendMessageToChannel(config.discord.logChannel, s);
+        sendMessageToChannel(config.maribel.logChannel, s);
     },
     // move replays?
     getReplays: function() {
@@ -54,7 +54,7 @@ var recentLogs = [];
 
 client.on('ready', () => {
     log(`Logged in as ${client.user.tag}`);
-    client.user.setActivity(config.discord.game, {type : 'PLAYING'});
+    client.user.setActivity(config.maribel.game, {type : 'PLAYING'});
 });
 
 // delete replay if submitter deletes their original message

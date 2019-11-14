@@ -6,7 +6,7 @@ var channelactive = config.renko.channels;
 var channels = {};
 channels.theaterChannel = '#' + config.renko.channels.theatre;
 channels.command = '#' + config.renko.channels.command;
-channels.standard = config.renko.chanenls.standard.map(function (value) {
+channels.standard = config.renko.channels.standard.map(function (value) {
     return '#' + value;
 channels.all = channels.theaterChannel.concat(channels.command.concat(channels.standard));
 });
@@ -21,10 +21,10 @@ const client = new tmi.Client({
         username: config.renko.username,
         password: config.renko.oauth
     },
-    channels: config.renko.channels.alls
+    channels: config.renko.channels.all
 });
 
-// console.log("config is",config.twitch,config.twitch.username);
+// console.log("config is",config.renko,config.renko.username);
 var Maribel = null;
 
 module.exports = {
