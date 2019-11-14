@@ -1,10 +1,19 @@
 {
-	"discord": {
-		"game": "with Renko's hair",
-		"master": "discord-id-of-bot-owner",
-		"vip": [],
-		"token": "your-discord-api-token",
-		"channel": "discord-channel-id",
-		"inviteLink": "https://discord.gg/4KsV6pw"
-	}
+    "maribel": {
+        "token" : "discord bot token",
+        "game" : "with Renko's hair",
+        "replaychannel" : "discord replay submission channel id",
+        "master" : "bot owner",
+        "VIP": ["people who have access"],
+        "fileext": ["dat", "rpy", "rep"]
+    },
+    "renko": {
+        "username" : "extrarenko",
+        "oauth" : "oauth token",
+        "channels": {
+            "theatre" : "theatre channel",
+            "standard": ["channels for other commands"],
+            "command": "bot message spam channel"
+        }
+    }
 }
