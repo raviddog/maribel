@@ -2,12 +2,14 @@ const tmi = require('tmi.js');
 const config = require('./config.json');
 
 var channels = {};
-channels.theaterChannel = '#' + config.renko.channels.theatre;
+channels.theatre = '#' + config.renko.channels.theatre;
 channels.command = '#' + config.renko.channels.command;
 channels.standard = config.renko.channels.standard.map(function (value) {
     return '#' + value;
 });
-channels.all = channels.theaterChannel.concat(channels.command.concat(channels.standard));
+channels.all = Array.from(channels.standard);
+channels.all.push(theaterChannel);
+channels.all.push(command);
 
 const client = new tmi.Client({
     options: { debug: true },
