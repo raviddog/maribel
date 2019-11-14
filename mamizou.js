@@ -36,6 +36,9 @@ function prepareScheduleFromReplayArray(replays) {
 	};
 	// `git rev-parse HEAD`
 	replaysCopy = Array.from(replays);
+	replaysCopy.forEach(function(x,i) {
+		x.id = i;
+	})
 	replaysCopy.sort(function(a,b) {
 		if (a.theater_date == b.theater_date) {
 			if (a.theater_date == null) {
