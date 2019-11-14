@@ -3,6 +3,8 @@ const client = new Discord.Client();
 const config = require('./config.json');
 var fs = require('fs');
 
+let Keine = require('./keine.js');
+
 // replay data structure
 /*
 const placeholder = { 
@@ -17,7 +19,10 @@ const placeholder = {
 var Renko = null;
 
 module.exports = {
-    initialize: function() {
+    initialize: function(isDebug) {
+        if (isDebug) {
+            return;
+        }
         client.login(config.discord.token);
     },
     setRenko: function(r) {
@@ -25,6 +30,9 @@ module.exports = {
     },
     sendMessage: function(msg) {
         sendMessageToChannel(config.discord.channel, msg);
+    },
+    devLog: function(s) {
+        sendMessageToChannel(config.discord.logChannel, s);
     }
 }
 
@@ -105,6 +113,12 @@ client.on('message', message => {
                             break;
                         case 'add':
                             commands.add(args, message);
+                            break;
+                        case 'organize':
+                            commands.organize(args, message);
+                            break;
+                        case 'swap':
+                            commands.swap(args, message);
                             break;
                         case 'twitchsay':
                             commands.twitchsay(args, message);
@@ -227,9 +241,23 @@ commands.twitchsay = function(args, message) {
     }
     log("twitchsay "+channelName+": "+text);
 }
+commands.swap = function(args,message) {
+    try {
+        Keine.swapReplay(replays[args[1]], replays[args[2]]);
+        sendMessage(message, `Swapped replay #${args[1]} with #${args[2]}.`);
+    } catch (err) {
+        log(err.toString());
+        sendMessage(message, `Error swapping`);
+    }
+}
+commands.organize = function(args, message) {
+    Keine.organizeReplays(replays);
+    saveReplays();
+    sendMessage(message, 'Organized replays.');
+}
 
 function formatReplay(index, replay) {
-    return `\n-\n# ${index} ${replay.user} ${replay.url}\nMessage: ${replay.notes}`;
+    return `\n-\n# ${index} ${replay.theater_date} ${replay.user} ${replay.url}\nMessage: ${replay.notes}`;
 }
 
 
@@ -274,8 +302,7 @@ function saveCurrentSchedule() {
 }
 
 function saveReplays() {
-    saveToJson('replays', JSON.stringify(replays));
-    
+    saveToJson('replays', JSON.stringify(replays));   
 }
 
 function sendMessage(message, reply) {
