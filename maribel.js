@@ -3,6 +3,9 @@ const client = new Discord.Client();
 const config = require('./config.json');
 var fs = require('fs');
 
+let Keine = require('./keine.js');
+let moment = require('moment');
+
 // replay data structure
 /*
 const placeholder = { 
@@ -17,7 +20,10 @@ const placeholder = {
 var Renko = null;
 
 module.exports = {
-    initialize: function() {
+    initialize: function(isDebug) {
+        if (isDebug) {
+            return;
+        }
         client.login(config.discord.token);
     },
     setRenko: function(r) {
@@ -25,10 +31,18 @@ module.exports = {
     },
     sendMessage: function(msg) {
         sendMessageToChannel(config.discord.channel, msg);
+    },
+    devLog: function(s) {
+        sendMessageToChannel(config.discord.logChannel, s);
+    },
+    // move replays?
+    getReplays: function() {
+        return replays;
     }
 }
 
 var replays = [];
+replays = loadFromJson('replays');
 var schedule = [];
 
 // hold recent logging info so we can query it from discord instead of server side
@@ -38,8 +52,6 @@ var recentLogs = [];
 client.on('ready', () => {
     log(`Logged in as ${client.user.tag}`);
     client.user.setActivity(config.discord.game, {type : 'PLAYING'});
-    replays = loadFromJson('replays');
-    schedule = loadFromJson('schedule');
 });
 
 client.on('messageDelete', message => {
@@ -106,6 +118,18 @@ client.on('message', message => {
                         case 'add':
                             commands.add(args, message);
                             break;
+                        case 'bakaDumbFix':
+                            commands.dumbFix(args, message);
+                            break;
+                        case 'setDate':
+                            commands.setDate(args, message);
+                            break;
+                        case 'organize':
+                            commands.organize(args, message);
+                            break;
+                        case 'swap':
+                            commands.swap(args, message);
+                            break;
                         case 'twitchsay':
                             commands.twitchsay(args, message);
                             break;
@@ -129,19 +153,7 @@ client.on('message', message => {
 // command functions
 var commands = {};
 commands.replays = function(message) {
-    sendMessage(message, 'There are currently ' + (replays.length) + ' replays');
-    var msg = "";
-    replays.forEach(function (value, index) {
-        var s = formatReplay(index, value);
-        var newmsg = msg + s;
-        if(newmsg.length >= 2000) {
-            sendMessage(message, msg);
-            msg = s;
-        } else {
-            msg = newmsg;
-        }
-    });
-    sendMessageLog(message, msg, "Sent replays");
+    sendMessage(message, 'https://trt.mamizou.wtf/schedule');
 }
 commands.remove = function(n, message) {
     let num = parseInt(n);
@@ -227,9 +239,46 @@ commands.twitchsay = function(args, message) {
     }
     log("twitchsay "+channelName+": "+text);
 }
+commands.swap = function(args,message) {
+    try {
+        Keine.swapReplay(replays[args[1]], replays[args[2]]);
+        saveReplays();
+        sendMessage(message, `Swapped replay #${args[1]} with #${args[2]}.`);
+    } catch (err) {
+        log(err.toString());
+        sendMessage(message, `Error swapping`);
+    }
+}
+commands.setDate = function(args,message) {
+    let r = replays[args[1]];
+    // TODO: error check me
+
+    r.theater_date = args[2];
+    r.theater_order = args[3];
+
+    saveReplays();
+
+    log("setDate "+JSON.stringify(r));
+    sendMessage(message, `setDate completed.`);
+}
+commands.organize = function(args, message) {
+    Keine.organizeReplays(replays);
+    saveReplays();
+    sendMessage(message, 'Organized replays.');
+}
+commands.dumbFix = function(args, message) {
+    for (let i = 0, ii = replays.length; i<ii; i++) {
+        let r = replays[i];
+        if (r.theater_date) {
+            r.theater_date = moment(r.theater_date).add(-4,'d').format("YYYY-MM-DD");
+        }
+    }
+    saveReplays();
+    sendMessage(message, 'Fixed bad replay init');
+}
 
 function formatReplay(index, replay) {
-    return `\n-\n# ${index} ${replay.user} ${replay.url}\nMessage: ${replay.notes}`;
+    return `\n-\n# ${index} ${replay.theater_date} ${replay.user} ${replay.url}\nMessage: ${replay.notes}`;
 }
 
 
@@ -258,8 +307,17 @@ function loadFromJson(filename) {
 }
 
 function saveToJson(filename, data) {
-    let fullFilename = filename+'.json'; 
+    let fullFilename = filename+'.json';
+    let backupFile = filename+Date.now()+'.json';
     fs.writeFile(fullFilename, data,
+        function(err) {
+            if (err) {
+                log(err);
+            } else {
+                // log(`Saved ${fullFilename} to disk`);
+            }
+    });
+    fs.writeFile(backupFile, data,
         function(err) {
             if (err) {
                 log(err);
@@ -274,8 +332,7 @@ function saveCurrentSchedule() {
 }
 
 function saveReplays() {
-    saveToJson('replays', JSON.stringify(replays));
-    
+    saveToJson('replays', JSON.stringify(replays));   
 }
 
 function sendMessage(message, reply) {
