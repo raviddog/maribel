@@ -18,14 +18,14 @@ var Renko = null;
 
 module.exports = {
     initialize: function() {
-        client.login(config.discord.token);
+        client.login(config.maribel.token);
     },
     setRenko: function(r) {
         Renko = r;
-    },
-    sendMessage: function(msg) {
-        sendMessageToChannel(config.discord.channel, msg);
     }
+    // sendMessage: function(msg) {
+    //     sendMessageToChannel(config.maribel.channel, msg);
+    // }
 }
 
 var replays = [];
@@ -37,11 +37,12 @@ var recentLogs = [];
 
 client.on('ready', () => {
     log(`Logged in as ${client.user.tag}`);
-    client.user.setActivity(config.discord.game, {type : 'PLAYING'});
+    client.user.setActivity(config.maribel.game, {type : 'PLAYING'});
     replays = loadFromJson('replays');
-    schedule = loadFromJson('schedule');
+    // schedule = loadFromJson('schedule');
 });
 
+// delete replay if submitter deletes their original message
 client.on('messageDelete', message => {
     var index = replays.findIndex(replay => replay.msgid == message.id);
     if(index > -1) {
@@ -52,20 +53,17 @@ client.on('messageDelete', message => {
 });
 
 client.on('message', message => {
-    if(message.author.id == client.user.id) return; // ignore bot's messages
-    if(isMaster(message.author.id)) { // master commands
-        if(message.content == '!save') {
-            saveReplays();
-            return;
-        }
-    }
-    if(isChannel(message.channel.id) || isMaster(message.author.id)) {
-        if(message.attachments.size != 0) { // attachment, try to parse it as a replay
+    // ignore bots messages
+    if(message.author.id == client.user.id) return;
+
+    // add attachments as replays
+    if(isChannel(message.channel.id)) {
+        if(message.attachments.size != 0) {
             var hasReplay = false;
             var replayCount = 0;
             message.attachments.forEach(attachment => {
                 var extension = attachment.filename.split('.').pop();
-                if(extension == 'dat' || extension == 'rpy') {
+                if(config.maribel.fileext.indexof(extension) != -1) {
                     //replay file
                     var replay = {
                         user: message.author.tag,
@@ -80,23 +78,45 @@ client.on('message', message => {
                 }
             });
             if(hasReplay) {
+                // you can't have more than 1 attachment per replay, so it's just singular replay
+                // instead of plural 
                 sendMessage(message, "Added " + replayCount + " replay");
                 saveReplays();
             }
-        } else if(message.content.substring(0,1) == '!') {
-            var args = message.content.slice(1).split(' '); 
-            if(args.length > 0) {
-                let command = args[0];
+        }
+    }
+
+    // commands
+    if(message.content.substring(0,1) == '!') {
+        var args = message.content.slice(1).split(' '); 
+        if(args.length > 0) {
+            let command = args[0];
+            
+            // master commands from anywhere
+            if(isMaster(message.author.id)) {
+                switch(command) {
+                    case 'save':
+                        saveReplays();
+                        break;
+                    case 'logs':
+                        commands.logs(message);
+                        break;
+                    case 'twitchsay':
+                        commands.twitchsay(args, message);
+                        break;
+                }
+            }
+
+            // check if command is in replay channel or by master
+            if(isChannel(message.channel.id) || isMaster(message.author.id)) {
                 let arg = args[1] || null;
+                // master/VIP commands
                 if (isMaster(message.author.id) || isVIP(message.author.id)) {
                     // VIP commands
                     switch (command) {
-                        case 'logs':
-                            commands.logs(message);
-                            break;
-                        case 'twitch':
-                            commands.twitch(arg, message);
-                            break;
+                        // case 'twitch':
+                        //     commands.twitch(arg, message);
+                        //     break;
                         case 'remove': 
                             commands.remove(arg, message);
                             break;
@@ -106,11 +126,10 @@ client.on('message', message => {
                         case 'add':
                             commands.add(args, message);
                             break;
-                        case 'twitchsay':
-                            commands.twitchsay(args, message);
-                            break;
                     }
                 }
+
+                // common commands
                 switch (command) {
                     case 'replays':
                         commands.replays(message);
@@ -121,32 +140,37 @@ client.on('message', message => {
                 }  
             }
         }
-        
     }
 });
 
 
 // command functions
 var commands = {};
+
 commands.replays = function(message) {
     sendMessage(message, 'There are currently ' + (replays.length) + ' replays');
     var msg = "";
-    replays.forEach(function (value, index) {
-        var s = formatReplay(index, value);
-        var newmsg = msg + s;
-        if(newmsg.length >= 2000) {
-            sendMessage(message, msg);
-            msg = s;
-        } else {
-            msg = newmsg;
-        }
-    });
+    
+    // TODO i'm not sure how to check for if there's no replays, this is why i had the placeholder
+    if(replays != null) {
+        replays.forEach(function (value, index) {
+            var s = formatReplay(index, value);
+            var newmsg = msg + s;
+            if(newmsg.length >= 2000) {
+                sendMessage(message, msg);
+                msg = s;
+            } else {
+                msg = newmsg;
+            }
+        });
+    }
     sendMessageLog(message, msg, "Sent replays");
 }
+
 commands.remove = function(n, message) {
     let num = parseInt(n);
     if(!isNaN(num)) {
-        if(num < replays.length && num > 0) {
+        if(num < replays.length && num >= 0) {
             replays.splice(num, 1);
             sendMessageLog(message, "Removed replay #" + num, "Removed replay #" + num);
             saveReplays();
@@ -155,19 +179,24 @@ commands.remove = function(n, message) {
         }
     }
 }
+
 commands.drop = function(n, message) {
     if(replays.length < 1) {
         sendMessage(message, "No replays to drop");
     } else if(n == 'all') {
-            replays.splice(1, replays.length - 1);
+            replays.splice(0, replays.length - 1);
             sendMessageLog(message, "Dropped all replays", "Dropped all replays");
             saveReplays();
     } else if (n) { // n not falsy, so has an index?
         var num = parseInt(n);
         if(isNaN(num)) {
-            if(0 < num && num  < replays.length) {
+            if(0 < num && num <= replays.length) {
                 replays.splice(0, num);
-                sendMessageLog(message, "Dropped " + num + " replays", "Dropped " + num + " replays");
+                if(num == 1) {
+                    sendMessageLog(message, "Dropped " + num + " replay", "Dropped " + num + " replay");
+                } else {
+                    sendMessageLog(message, "Dropped " + num + " replays", "Dropped " + num + " replays");
+                }
             } else {
                 replays = [];
                 sendMessageLog(message, "Dropped all replays", "Dropped all replays");
@@ -181,6 +210,7 @@ commands.drop = function(n, message) {
         saveReplays();
     }
 }
+
 commands.help = function(arg, message) {
      var msg =   `!replays - list all replays
 !remove # - remove specified replay
@@ -191,6 +221,7 @@ Deleting your message will remove the associated replay`;
     // sendPrivateMessage(message, msg);
     sendMessage(message, msg);
 }
+
 commands.add = function(args, message) {
      if(args.length > 1) {
         var replay = {
@@ -217,6 +248,7 @@ commands.add = function(args, message) {
 commands.logs = function(message) {
     sendMessage(message, 'Logs:\n'+recentLogs.join('\n'));
 }
+
 commands.twitchsay = function(args, message) {
     let channelName = args[1];
     let text = args.slice(2).join(' ');
@@ -234,14 +266,15 @@ function formatReplay(index, replay) {
 
 
 function isChannel(id) {
-    return id == config.discord.channel;
+    return id == config.maribel.replaychannel;
 }
 
 function isMaster(id) {
-    return id == config.discord.master;
+    return config.maribel.master.indexof(id) != -1;
 }
+
 function isVIP(id) {
-    return config.discord.vip && (config.discord.vip.indexOf(id) != -1);
+    return config.maribel.VIP.indexof(id) != -1;
 }
 
 function loadFromJson(filename) {

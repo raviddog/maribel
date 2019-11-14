@@ -1,7 +1,7 @@
 const tmi = require('tmi.js');
 const config = require('./config.json');
 
-var channelactive = config.twitch.channels;
+var channelactive = config.renko.channels;
 
 const client = new tmi.Client({
     options: { debug: true },
@@ -10,13 +10,13 @@ const client = new tmi.Client({
         reconnect: true
     },
     identity: {
-        username: config.twitch.name,
-        password: config.twitch.token
+        username: config.renko.username,
+        password: config.renko.oauth
     },
-    channels: config.twitch.channels
+    channels: config.renko.channels
 });
 
-console.log("config is",config.twitch,config.twitch.username);
+//console.log("config is",config.twitch,config.twitch.username);
 var Maribel = null;
 
 module.exports = {
@@ -30,14 +30,26 @@ module.exports = {
     },
     sendMessage: function(channelName, message) {
         sendMessageToChannel(channelName, message);
+    },
+    setTheatre: function(channelName) {
+
     }
 }
 
+var channels = {};
+channels.theaterChannel = '#' + config.renko.channels.theatre;
+channels.command = '#' + config.renko.channels.command;
+channels.standard = config.renko.chanenls.standard.map(function (value) {
+    return '#' + value;
+channels.all = channels.theaterChannel.concat(channels.command.concat(channels.standard));
+});
+
+var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
+
+
 var spammyMode = true;
 var enabled = false;
-var theaterChannel = '#foxinthywoods';
 var theaterMode = false;
-var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
 var msgCount = 0;
 var DISCORD_SPAM_DELAY = 1000 * 60 * 30;
 var timer;
@@ -51,7 +63,7 @@ var COMMAND_QUOTAS = {
 
 client.on('connected', (address) => {
     console.log('Connected to ' + address);
-    client.say('#mumei59', "connected").catch(console.error);
+    client.say(channels.command, "connected").catch(console.error);
 });
 
 client.on("logon", function(x) {
@@ -66,37 +78,46 @@ client.on('error', function(err) {
 
 client.on('message', (channel, user, message, self) => {
     if(self) return;
-    /*
-    if(channel == '#extrarenko') {
-        if(message == '!enable') {
-            enabled = true;
-            client.say(channel, 'Bot enabled');
-            timer = setInterval(discordTimer, DISCORD_SPAM_DELAY);
-            console.log(getDateTime() + ' Enabled');
-        } else if(message == '!disable') {
-            enabled = false;
-            client.say(channel, 'Bot disabled');
-            clearInterval(timer);
-            console.log(getDateTime() + ' Disabled');
-        }
-    } else if(channel == '#raviddog') {
-        if(enabled) {
-            if(user.username != 'raviddog') {
-                msgCount += 1;
-            }
-            if(message.substring(0,1) == '!') {
-                var args = message.slice(1).split(' ');
-                if(args.length > 0) {
-                    if(args[0] == 'discord') {
-                        client.say(channel, discord);
-                    }
+
+    // commands
+    if(message.substring(0,1) == '!') {
+        var args = message.slice(1).split(' ');
+        if(args.length > 0) {
+            if(channels.standard.indexOf(channel) != -1) {
+                switch(args[0]) {
+                    case 'zunsvision':
+                        client.say(channel, 'ZUNsVision1 ZUNsVision2').catch(console.error);
+                        setTimeout(function() {
+                            client.say(channel, 'ZUNsVision3 ZUNsVision4').catch(console.error);
+                        }, 1000);
+                        break;
                 }
             }
+            if(channel == channels.theatre) {
+                switch (args[0]) {
+                    case '!theater':
+                        sendNotImplemented(channel, args[0]);
+                        break;
+                    case '!submit':
+                        sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
+                        break;
+                    case '!schedule':
+                        sendNotImplemented(channel, args[0]);
+                        break;
+                    case '!cover':
+                        sendQuotaMessageToChannel(args[0], channel, 'COVER YOUR EEEEYES!!! BrokeBack');
+                        break;
+                }
+            }
+
+
+
+
         }
     }
-    */
     
-    if(channelactive.includes(channel)) {
+    /*
+    if(channels.standard.indexof(channel) != -1) {
         if (message.substring(0,1) == '!') {
             let args = message.split(' ');
             // theater only commands
@@ -150,13 +171,13 @@ client.on('message', (channel, user, message, self) => {
             }
             
         }
-    } 
+    } */
 });
 
 function sendMessageToChannel(channelName, message) {
     // TODO: put limits and such on this?
     if (channelName.substring(0,1) != '#') {
-        channelName = '#'+channelName;
+        channelName = '#' + channelName;
     }
     client.say(channelName, message).catch(console.error);
 }
@@ -186,7 +207,7 @@ function randomInt(a,b) {
 }
 
 function sendNotImplemented(channel, commandName) {
-    sendQuotaMessageToChannel('notImplemented', channelName, `The ${commandName} command is not implemented. Scream at Baka to fix.`);
+    sendQuotaMessageToChannel(channel, 'notImplemented', channelName, `The ${commandName} command is not implemented. Scream at Baka to fix.`);
 }
 
 function getDateTime() {
