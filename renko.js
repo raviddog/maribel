@@ -1,6 +1,16 @@
 const tmi = require('tmi.js');
 const config = require('./config.json');
 
+var channels = {};
+channels.theatre = '#' + config.renko.channels.theatre;
+channels.command = '#' + config.renko.channels.command;
+channels.standard = config.renko.channels.standard.map(function (value) {
+    return '#' + value;
+});
+channels.all = Array.from(channels.standard);
+channels.all.push(channels.theatre);
+channels.all.push(channels.command);
+
 const client = new tmi.Client({
     options: { debug: true },
     connection: {
@@ -14,7 +24,7 @@ const client = new tmi.Client({
     channels: channels.all
 });
 
-// console.log("config is",config.twitch,config.twitch.username);
+// console.log("config is",config.renko,config.renko.username);
 var Maribel = null;
 
 module.exports = {
@@ -37,13 +47,6 @@ module.exports = {
     }
 }
 
-var channels = {};
-channels.theatre = '#' + config.renko.channels.theatre;
-channels.command = '#' + config.renko.channels.command;
-channels.standard = config.renko.channels.standard.map(function (value) {
-    return '#' + value;
-});
-channels.all = channels.theatre.concat(channels.command.concat(channels.standard));
 
 var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
 
@@ -57,7 +60,7 @@ var timer;
 
 var COMMAND_QUOTAS = {
     default: {
-        wait: 60000
+        wait: 30000
         // messageCount: 20
     }
 }
@@ -82,11 +85,11 @@ client.on('message', (channel, user, message, self) => {
 
     // commands
     if(message.substring(0,1) == '!') {
-        var args = message.slice(1).split(' ');
+        var args = message.split(' ');
         if(args.length > 0) {
             if(channels.standard.indexOf(channel) != -1) {
                 switch(args[0]) {
-                    case 'zunsvision':
+                    case '!zunsvision':
                         client.say(channel, 'ZUNsVision1 ZUNsVision2').catch(console.error);
                         setTimeout(function() {
                             client.say(channel, 'ZUNsVision3 ZUNsVision4').catch(console.error);
@@ -103,7 +106,7 @@ client.on('message', (channel, user, message, self) => {
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
                         break;
                     case '!schedule':
-                        sendNotImplemented(channel, args[0]);
+                        sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
                         break;
                     case '!cover':
                         sendQuotaMessageToChannel(args[0], channel, 'COVER YOUR EEEEYES!!! BrokeBack');
@@ -131,7 +134,7 @@ client.on('message', (channel, user, message, self) => {
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
                         break;
                     case '!schedule':
-                        sendNotImplemented(channel, args[0]);
+                        sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
                         break;
                 }
             }

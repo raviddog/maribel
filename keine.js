@@ -71,8 +71,18 @@ API.organizeReplays = function(replays) {
 			// take last date and add
 			let newDate = moment(dates[dates.length-1]).add(1,"w").format("YYYY-MM-DD");
 			dates.push(newDate);
+
+			// XXX: support fox being a bitchass and not presubmitting replays
+			let placeholder = {
+				user: 'TRT HOST',
+				url: 'about: blank',
+				notes: 'TRT HOST opening replay placeholder',
+				theater_date: newDate,
+				theater_order: 0
+			}
+			replays.push(placeholder);
 			replaysByTheater[newDate] = {
-				replays: [],
+				replays: [placeholder],
 				next_order: 10
 			};
 			targetDate = newDate;
