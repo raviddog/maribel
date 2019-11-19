@@ -44,9 +44,9 @@ function prepareScheduleFromReplayArray(replays, opts) {
 		x.id = i;
 	})
 	if (!opts.showAll) {
-		let todayMinus2 = moment().add(-2,'d').format('YYYY-MM-DD');
+		let todayMinus2 = moment().add(-1,'d').format('YYYY-MM-DD');
 		replaysCopy.filter(function(r) {
-			return todayMinus > r.theater_date
+			return todayMinus2 < r.theater_date
 		});
 	}
 	replaysCopy.sort(function(a,b) {
