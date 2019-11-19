@@ -78,7 +78,7 @@ client.on('message', message => {
             var replayCount = 0;
             message.attachments.forEach(attachment => {
                 var extension = attachment.filename.split('.').pop();
-                if(config.maribel.fileext.indexof(extension) != -1) {
+                if(config.maribel.fileext.indexOf(extension) != -1) {
                     //replay file
                     var replay = {
                         user: message.author.tag,
