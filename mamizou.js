@@ -12,8 +12,12 @@ app.get('/hello', function(req,res) {
 });
 
 app.get('/schedule', function(req,res) {
+
 	let scheduleRenderData = prepareScheduleFromReplayArray(
-			Maribel.getReplays()
+			Maribel.getReplays(),
+			{
+				showAll: req.query.all == 1
+			}
 	);
 	res.render('schedule', scheduleRenderData);
 });
@@ -30,7 +34,7 @@ module.exports = {
 	}
 };
 
-function prepareScheduleFromReplayArray(replays) {
+function prepareScheduleFromReplayArray(replays, opts) {
 	let schedule = {
 		timestamp: moment().format(),
 	};
@@ -39,18 +43,30 @@ function prepareScheduleFromReplayArray(replays) {
 	replaysCopy.forEach(function(x,i) {
 		x.id = i;
 	})
+	if (!opts.showAll) {
+		let todayMinus2 = moment().add(-2,'d').format('YYYY-MM-DD');
+		replaysCopy.filter(function(r) {
+			return todayMinus > r.theater_date
+		});
+	}
 	replaysCopy.sort(function(a,b) {
 		if (a.theater_date == b.theater_date) {
 			if (a.theater_date == null) {
 				// fuck it
-				return 0;
+				return a.id - b.id;
 			} else {
 				return a.theater_order - b.theater_order;
 			}
 		} else {
+			if (a.theater_date == null) {
+				return 1;
+			}
+			if (!b.theater_date == null) {
+				return -1;
+			}
 			if (a.theater_date > b.theater_date) {
 				return 1;
-			} else {
+			} else if (a.theater_date < b.theater_date) {
 				return -1;
 			}
 		}

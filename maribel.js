@@ -298,14 +298,14 @@ commands.organize = function(args, message) {
     sendMessage(message, 'Organized replays.');
 }
 commands.dumbFix = function(args, message) {
-    for (let i = 0, ii = replays.length; i<ii; i++) {
-        let r = replays[i];
-        if (r.theater_date) {
-            r.theater_date = moment(r.theater_date).add(-4,'d').format("YYYY-MM-DD");
-        }
-    }
-    saveReplays();
-    sendMessage(message, 'Fixed bad replay init');
+    // for (let i = 0, ii = replays.length; i<ii; i++) {
+    //     let r = replays[i];
+    //    if (r.theater_date) {
+    //        r.theater_date = moment(r.theater_date).add(-4,'d').format("YYYY-MM-DD");
+    //    }
+    // }
+    // saveReplays();
+    sendMessage(message, 'Please do not press this button again.');
 }
 
 function formatReplay(index, replay) {
