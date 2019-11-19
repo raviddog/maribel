@@ -126,7 +126,7 @@ client.on('message', message => {
             if(isChannel(message.channel.id) || isMaster(message.author.id)) {
                 let arg = args[1] || null;
                 // master/VIP commands
-                if (isMaster(message.author.id) || isVIP(message.author.id)) {
+                if (isMaster(message.author.id) || isVIP(message.member)) {
                     // VIP commands
                     switch (command) {
                         // case 'twitch':
@@ -321,8 +321,8 @@ function isMaster(id) {
     return config.maribel.master.indexOf(id) != -1;
 }
 
-function isVIP(id) {
-    return config.maribel.VIP.indexOf(id) != -1;
+function isVIP(member) {
+    return member.roles.some(role => role.id == config.maribel.VIP);
 }
 
 function loadFromJson(filename) {
