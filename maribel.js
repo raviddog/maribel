@@ -127,23 +127,22 @@ client.on('message', message => {
                 let arg = args[1] || null;
                 // master/VIP commands
                 if (isMaster(message.author.id) || isVIP(message.member)) {
-                    // VIP commands
                     switch (command) {
                         // case 'twitch':
                         //     commands.twitch(arg, message);
                         //     break;
+                        case 'settheatre':
+                            commands.theatre(arg, message);
+                            break;
                         case 'remove': 
                             commands.remove(arg, message);
                             break;
                         case 'drop':
                             commands.drop(arg, message);
                             break;
-                        case 'add':
-                            commands.add(args, message);
-                            break;
-                        case 'bakaDumbFix':
-                            commands.dumbFix(args, message);
-                            break;
+                        // case 'bakaDumbFix':
+                        //     commands.dumbFix(args, message);
+                        //     break;
                         case 'setDate':
                             commands.setDate(args, message);
                             break;
@@ -163,6 +162,9 @@ client.on('message', message => {
                         break;
                     case 'help':
                         commands.help(arg, message);
+                        break;
+                    case 'add':
+                        commands.add(args, message);
                         break;
                 }  
             }
@@ -258,6 +260,16 @@ commands.add = function(args, message) {
 }
 commands.logs = function(message) {
     sendMessage(message, 'Logs:\n'+recentLogs.join('\n'));
+}
+commands.theatre = function(arg, message) {
+    try {
+        Renko.setTheatre(arg);
+        sendMessage(message, `Set theatre channel to ${arg}`);
+        log(`theatre channel set to ${arg}`);
+    } catch (err) {
+        log(err);
+        sendMessage(message, `Error setting theatre channel. Check logs.`);
+    }
 }
 
 commands.twitchsay = function(args, message) {

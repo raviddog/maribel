@@ -43,7 +43,12 @@ module.exports = {
         sendMessageToChannel(channelName, message);
     },
     setTheatre: function(channelName) {
-
+        if (channelName.substring(0,1) != '#') {
+            channelName = '#' + channelName;
+        }
+        client.join(channelName)
+            .catch(console.error);
+        channels.theatre = channelName;
     }
 }
 
@@ -119,63 +124,6 @@ client.on('message', (channel, user, message, self) => {
 
         }
     }
-    
-    /*
-    if(channels.standard.indexof(channel) != -1) {
-        if (message.substring(0,1) == '!') {
-            let args = message.split(' ');
-            // theater only commands
-            if (theaterChannel == channel) {
-                switch (args[0]) {
-                    case '!theater':
-                        sendNotImplemented(channel, args[0]);
-                        break;
-                    case '!submit':
-                        sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
-                        break;
-                    case '!schedule':
-                        sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
-                        break;
-                }
-            }
-            switch (args[0]) {
-                case '!discord':
-                    sendQuotaMessageToChannel('!discord', channel, discord_spam);
-                    break;
-                case '!zunsvision':
-                    client.say(channel, 'ZUNsVision1 ZUNsVision2').catch(console.error);
-                    setTimeout(function() {
-                        client.say(channel, 'ZUNsVision3 ZUNsVision4').catch(console.error);
-                    }, 1000);
-                    break;
-                case '!quote':
-                    sendNotImplemented(channel, args[0]);
-                    break;
-                case '!cover':
-                    sendQuotaMessageToChannel(args[0], channel, 'COVER YOUR EEEEYES!!! BrokeBack');
-                    break;
-            }
-        } else {
-            // special cases
-            let messageLowered = message.toLowerCase();
-
-            if (messageLowered.indexOf("does this clear") != -1) {
-                sendQuotaMessageToChannel('doesthisclear', channel, "Does this even clear? Kappa");
-            } else if (messageLowered.indexOf("8888") != -1) {
-                sendQuotaMessageToChannel('8888', channel, messageLowered);
-            }
-            if (spammyMode) {
-                if (message == 'Kappa') {
-                    sendQuotaMessageToChannel('Kappa', channel, 'Kappa');
-                } else if (message == 'LUL') {
-                    sendQuotaMessageToChannel('LUL', channel, 'LUL');
-                } else if (messageLowered.indexOf("lolk") != -1) {
-                    sendQuotaMessageToChannel('LULK', channel, 'LUL K');
-                }
-            }
-            
-        }
-    } */
 });
 
 function sendMessageToChannel(channelName, message) {
