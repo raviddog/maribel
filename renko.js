@@ -90,11 +90,11 @@ client.on('message', (channel, user, message, self) => {
 
     // commands
     if(message.substring(0,1) == '!') {
-        var args = message.split(' ');
+        var args = message.slice(1).split(' ');
         if(args.length > 0) {
             if(channels.standard.indexOf(channel) != -1) {
                 switch(args[0]) {
-                    case '!zunsvision':
+                    case 'zunsvision':
                         client.say(channel, 'ZUNsVision1 ZUNsVision2').catch(console.error);
                         setTimeout(function() {
                             client.say(channel, 'ZUNsVision3 ZUNsVision4').catch(console.error);
@@ -104,16 +104,16 @@ client.on('message', (channel, user, message, self) => {
             }
             if(channel == channels.theatre) {
                 switch (args[0]) {
-                    case '!theater':
+                    case 'theater':
                         sendNotImplemented(channel, args[0]);
                         break;
-                    case '!submit':
+                    case 'submit':
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
                         break;
-                    case '!schedule':
+                    case 'schedule':
                         sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
                         break;
-                    case '!cover':
+                    case 'cover':
                         sendQuotaMessageToChannel(args[0], channel, 'COVER YOUR EEEEYES!!! BrokeBack');
                         break;
                 }
