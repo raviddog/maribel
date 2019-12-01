@@ -43,7 +43,7 @@ function prepareScheduleFromReplayArray(replays, opts) {
 	replaysCopy.forEach(function(x,i) {
 		x.id = i;
 	})
-	if (!opts.showAll) {
+	if (opts.showAll) {
 		let todayMinus2 = moment().add(-1,'d').format('YYYY-MM-DD');
 		replaysCopy.filter(function(r) {
 			return todayMinus2 < r.theater_date
