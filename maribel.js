@@ -158,6 +158,7 @@ client.on('message', message => {
                 // common commands
                 switch (command) {
                     case 'replays':
+                    case 'schedule':
                         commands.replays(message);
                         break;
                     case 'help':
