@@ -2,6 +2,11 @@ const express = require('express');
 const app = express();
 const port = 3000;
 let moment = require('moment');
+let bodyParser = require('body-parser');
+
+var jsonParser = bodyParser.json({
+	limit: '25MB'
+})
 
 var Maribel = null;
 
@@ -9,6 +14,11 @@ app.set('view engine','hbs')
 
 app.get('/hello', function(req,res) {
 	res.send("Hello from another world!");
+});
+
+app.get('/api/github/payload', jsonParser, function(req,res) {
+	console.log("got payload",req.body);
+	res.send("ok");
 });
 
 app.get('/schedule', function(req,res) {
