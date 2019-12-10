@@ -4,9 +4,9 @@ const port = 3000;
 let moment = require('moment');
 let bodyParser = require('body-parser');
 
-var jsonParser = bodyParser.json({
+var urlencodedParser = bodyParser.({
 	limit: '25MB'
-})
+});
 
 var Maribel = null;
 
@@ -16,8 +16,8 @@ app.get('/hello', function(req,res) {
 	res.send("Hello from another world!");
 });
 
-app.all('/api/github/payload', jsonParser, function(req,res) {
-	console.log("got payload",req.body);
+app.all('/api/github/payload', urlencodedParser, function(req,res) {
+	console.log("got payload",req.url,req.query,req.body);
 	res.send("ok");
 });
 
