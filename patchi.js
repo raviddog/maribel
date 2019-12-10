@@ -3,13 +3,21 @@ var sqlite3 = require('sqlite3').verbose();
 
 var db = new sqlite3.Database('maribel.sqlite');
 
+var Maribel = {};
+
 module.exports = {
 	_db: db,
+	setMaribel: function(m) {
+		Maribel = m;
+	},
 	setupDatabase: function() {
 		db.serialize(function() {
+			Maribel.devLog("setupDatabase DROP TABLE");
+
 			db.run("DROP TABLE theater_entry");
 
 
+			Maribel.devLog("setupDatabase CREATE TABLE");
 			// SCHEDULES TABLE
 			db.run(`CREATE TABLE theater_entry (
 				entry_id INTEGER PRIMARY KEY,
@@ -17,11 +25,17 @@ module.exports = {
 				url VARCHAR(255),
 				notes TEXT,
 				msgid VARCHAR(255),
-				theater_date
+				theater_date VARCHAR(16),
 			`);
+
+			Maribel.devLog("setupDatabase INSERT FROM replays");
+			// get the raw data from maribel
+			let rawReplays = Maribel.getReplays();
+
+			// for each replay, transform and insert
 		});
 	},
-	insertUnsafe: function(tableName, obj) {
+	insertUnsafe: function(tableName, obj) { // assume internal object with only valid columns
 		let keyClause = [];
 		let valuesClause = [];
 		for (let k, v in obj) {
@@ -30,7 +44,10 @@ module.exports = {
 		}
 		db.run(`INSERT INTO ? (?) VALUES (?);`, [tableName, keyClaude, valuesClause] done);
 	},
-	updateUnsafe: function(tableName, obj, whereClause) {
+	updateUnsafe: function(tableName, obj, whereClause) { // assume internal object with only valid columns
+		if (!isNaN(whereClause)) {
+			whereClause = `id = {whereClause"`;
+		}
 		let setClause = [];
 		for (let k, v in obj) {
 			setClaude = `{k} = {v}`;
@@ -41,6 +58,7 @@ module.exports = {
 		db.run(`DELETE FROM ${tableName} WHERE ${whereClause};`, [], done);
 	},
 	getAll: function(tableName) {
-		db.run()
-	}
+		db.run(`SELECT * FROM ${tableName}`);
+	},
+
 }
