@@ -4,8 +4,7 @@ var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('maribel.sqlite');
 
 var Maribel = {};
-
-module.exports = {
+VAR API = {
 	_db: db,
 	setMaribel: function(m) {
 		Maribel = m;
@@ -33,6 +32,11 @@ module.exports = {
 			let rawReplays = Maribel.getReplays();
 
 			// for each replay, transform and insert
+			rawReplays.forEach(function(r) {
+				let rFixed = r;
+				// transform?
+				API.insertUnsafe("theater_entry", r);
+			});
 		});
 	},
 	insertUnsafe: function(tableName, obj) { // assume internal object with only valid columns
@@ -62,3 +66,5 @@ module.exports = {
 	},
 
 }
+
+module.exports = API;
