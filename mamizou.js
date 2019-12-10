@@ -16,7 +16,7 @@ app.get('/hello', function(req,res) {
 	res.send("Hello from another world!");
 });
 
-app.get('/api/github/payload', jsonParser, function(req,res) {
+app.all('/api/github/payload', jsonParser, function(req,res) {
 	console.log("got payload",req.body);
 	res.send("ok");
 });
