@@ -255,6 +255,7 @@ commands.add = function(args, message) {
         }
         replays.push(replay);
         sendMessage(message, "Added replay");
+        commands.organize(args, message);
         // console.log(replay);
         saveReplays();
     }
