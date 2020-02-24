@@ -243,10 +243,6 @@ function getScheduleTwitch() {
     return returnText;
 }
 
-commands.replays = function(message) {
-    sendMessage(message, 'https://trt.mamizou.wtf/schedule');
-}
-
 commands.remove = function(n, message) {
     let num = parseInt(n);
     if(!isNaN(num)) {
@@ -261,12 +257,16 @@ commands.remove = function(n, message) {
 }
 
 commands.help = function(arg, message) {
-     var msg =   `!replays - list all replays
-!remove # - remove specified replay
-!drop (#/all) - remove x replays from the front
+     var msg =   `!schedule - view upcoming schedule
 !add (link) (notes) - manually add a non-replay file
 Directly uploading a replay file to the channel will also add it.
-Deleting your message will remove the associated replay`;
+Deleting your message will remove the associated replay
+\n
+VIP commands:
+!settheatre - change designated theatre channel
+!remove # - remove specified replay from the schedule
+!organize - add dates to all new replays
+!setDate - manually set a replay date`;
     // sendPrivateMessage(message, msg);
     sendMessage(message, msg);
 }
