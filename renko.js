@@ -41,14 +41,6 @@ module.exports = {
     },
     sendMessage: function(channelName, message) {
         sendMessageToChannel(channelName, message);
-    },
-    setTheatre: function(channelName) {
-        if (channelName.substring(0,1) != '#') {
-            channelName = '#' + channelName;
-        }
-        client.join(channelName)
-            .catch(console.error);
-        channels.theatre = channelName;
     }
 }
 

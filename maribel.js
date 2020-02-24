@@ -134,10 +134,10 @@ client.on('message', message => {
                     switch (command) {
                         // case 'twitch':
                         //     commands.twitch(arg, message);
+                        // //     break;
+                        // case 'settheatre':
+                        //     commands.theatre(arg, message);
                         //     break;
-                        case 'settheatre':
-                            commands.theatre(arg, message);
-                            break;
                         case 'remove': 
                             commands.remove(arg, message);
                             break;
@@ -263,7 +263,6 @@ Directly uploading a replay file to the channel will also add it.
 Deleting your message will remove the associated replay
 \n
 VIP commands:
-!settheatre - change designated theatre channel
 !remove # - remove specified replay from the schedule
 !organize - add dates to all new replays
 !setDate - manually set a replay date`;
