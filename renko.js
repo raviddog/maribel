@@ -52,7 +52,7 @@ var spammyMode = true;
 var enabled = false;
 var theaterMode = false;
 var msgCount = 0;
-var DISCORD_SPAM_DELAY = 1000 * 60 * 30;
+var DISCORD_SPAM_DELAY = 1000 * 60 * 10;
 var timer;
 
 var COMMAND_QUOTAS = {
@@ -65,6 +65,8 @@ var COMMAND_QUOTAS = {
 client.on('connected', (address) => {
     console.log('Connected to ' + address);
     client.say(channels.command, "connected").catch(console.error);
+    //  ravid discord bot spam
+    timer = setInterval(discordTimer, DISCORD_SPAM_DELAY);
 });
 
 client.on("logon", function(x) {
@@ -79,6 +81,10 @@ client.on('error', function(err) {
 
 client.on('message', (channel, user, message, self) => {
     if(self) return;
+    //  ravid discord spam stuff
+    if(channel == '#raviddog' && user.username != 'raviddog') {
+        msgCount += 1;
+    }
 
     // commands
     if(message.substring(0,1) == '!') {
@@ -96,11 +102,11 @@ client.on('message', (channel, user, message, self) => {
             }
             if(channel == channels.theatre) {
                 switch (args[0]) {
-                    case 'theater':
-                        sendNotImplemented(channel, args[0]);
-                        break;
                     case 'submit':
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
+                        break;
+                    case 'discord':
+                        sendQuotaMessageToChannel('!discord', channel, discord_spam);
                         break;
                     case 'schedule':
                         sendQuotaMessageToChannel('!schedule', channel, Maribel.getSchedule());
@@ -153,5 +159,12 @@ function sendNotImplemented(channel, commandName) {
 
 function getDateTime() {
     return (new Date()).toISOString();
+}
+
+function discordTimer() {
+    if(msgCount > 20) {
+        msgCount = 0;
+        client.say('#raviddog', discord_spam);
+    }
 }
 
