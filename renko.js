@@ -111,10 +111,7 @@ client.on('message', (channel, user, message, self) => {
                         sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
                         break;
                     case 'schedule':
-                        sendQuotaMessageToChannel('!schedule', channel, "https://trt.mamizou.wtf/schedule");
-                        break;
-                    case 'cover':
-                        sendQuotaMessageToChannel(args[0], channel, 'COVER YOUR EEEEYES!!! BrokeBack');
+                        sendQuotaMessageToChannel('!schedule', channel, Maribel.getSchedule());
                         break;
                 }
             }

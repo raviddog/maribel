@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('./config.json');
+const gameList = require('./games.json');
 var fs = require('fs');
 
 let Keine = require('./keine.js');
@@ -38,6 +39,9 @@ module.exports = {
     // move replays?
     getReplays: function() {
         return replays;
+    },
+    getSchedule: function() {
+        return getScheduleTwitch();
     }
     // sendMessage: function(msg) {
     //     sendMessageToChannel(config.maribel.channel, msg);
@@ -137,12 +141,6 @@ client.on('message', message => {
                         case 'remove': 
                             commands.remove(arg, message);
                             break;
-                        case 'drop':
-                            commands.drop(arg, message);
-                            break;
-                        // case 'bakaDumbFix':
-                        //     commands.dumbFix(args, message);
-                        //     break;
                         case 'setDate':
                             commands.setDate(args, message);
                             break;
@@ -159,7 +157,7 @@ client.on('message', message => {
                 switch (command) {
                     case 'replays':
                     case 'schedule':
-                        commands.replays(message);
+                        commands.getNextSchedule(message);
                         break;
                     case 'help':
                         commands.help(arg, message);
@@ -177,6 +175,74 @@ client.on('message', message => {
 // command functions
 var commands = {};
 
+function getTodaySchedule() {
+    //  get a formatted list of the upcoming replays
+
+    var todayMinus2 = moment().add(-2, 'd').format('YYYY-MM-DD');
+    var todayPlus5 = moment().add(5, 'd').format('YYYY-MM-DD');
+    var nextSchedule = replays.filter(function(r) {
+        return todayMinus2 < r.theater_date && todayPlus5 > r.theater_date;
+    });
+    var returnSchedule = [];
+    returnSchedule.push({
+        name: "TRT Host",
+        game: "unknown",
+        file: "none"
+    });
+    //  trim discord tags and convert games
+    nextSchedule.forEach(function(current) {
+        //  get end of url
+        var filename = current.url.split('/').pop();
+        var filecopy = filename;
+        var curGame;
+        //  check if url is a replay file
+        if(config.maribel.fileext.indexOf(filecopy.split('.').pop()) > -1) {
+            curGame = filename;
+            //  find game
+            gameList.touhou.forEach(function(current) {
+                if(filename.findIndex(current) > -1) {
+                    curGame = current;
+                }
+                break;
+            });
+        } else {
+            //  not a file
+            //  temp
+            curGame = 'video';
+        }
+
+        //  trim discord tag from name
+        var username = current.user.split('#').shift();
+        
+        returnSchedule.push({
+            name: username,
+            game: curGame,
+            file: filename
+        });
+    });
+
+    return returnSchedule;
+}
+
+commands.getNextSchedule = function(message) {
+    var returnText = "Schedule:\n";
+    var nextSchedule = getTodaySchedule();
+    nextSchedule.forEach(function(current) {
+        returnText = returnText + current.name + ': ' + current.game + ' (' + current.file + ')\n';
+    });
+    returnText = returnText + "The full schedule can be found at https://trt.mamizou.wtf/schedule";
+    sendMessage(message, returnText);
+}
+
+function getScheduleTwitch() {
+    var nextSchedule = getTodaySchedule();
+    nextSchedule.forEach(function(current, index) {
+        returnText = returnText + current.name + ': ' + current.game + ' | ';
+    });
+    returnText = returnText + "Full schedule: https://trt.mamizou.wtf/schedule";
+    return returnText;
+}
+
 commands.replays = function(message) {
     sendMessage(message, 'https://trt.mamizou.wtf/schedule');
 }
@@ -191,37 +257,6 @@ commands.remove = function(n, message) {
         } else {
             sendMessage(message, "Invalid replay number");
         }
-    }
-}
-
-commands.drop = function(n, message) {
-    if(replays.length < 1) {
-        sendMessage(message, "No replays to drop");
-    } else if(n == 'all') {
-            replays.splice(0, replays.length - 1);
-            sendMessageLog(message, "Dropped all replays", "Dropped all replays");
-            saveReplays();
-    } else if (n) { // n not falsy, so has an index?
-        var num = parseInt(n);
-        if(isNaN(num)) {
-            if(0 < num && num <= replays.length) {
-                replays.splice(0, num);
-                if(num == 1) {
-                    sendMessageLog(message, "Dropped " + num + " replay", "Dropped " + num + " replay");
-                } else {
-                    sendMessageLog(message, "Dropped " + num + " replays", "Dropped " + num + " replays");
-                }
-            } else {
-                replays = [];
-                sendMessageLog(message, "Dropped all replays", "Dropped all replays");
-            }
-            saveReplays();
-        }
-    } else {
-        //assume 1
-        replays.splice(0, 1);
-        sendMessageLog(message, "Dropped 1 replay", "Dropped 1 replay");
-        saveReplays();
     }
 }
 
@@ -255,7 +290,7 @@ commands.add = function(args, message) {
         }
         replays.push(replay);
         sendMessage(message, "Added replay");
-        commands.organize(args, message);
+        // commands.organize(args, message);
         // console.log(replay);
         saveReplays();
     }
@@ -263,6 +298,7 @@ commands.add = function(args, message) {
 commands.logs = function(message) {
     sendMessage(message, 'Logs:\n'+recentLogs.join('\n'));
 }
+
 commands.theatre = function(arg, message) {
     try {
         Renko.setTheatre(arg);
@@ -284,6 +320,7 @@ commands.twitchsay = function(args, message) {
     }
     log("twitchsay "+channelName+": "+text);
 }
+
 commands.swap = function(args,message) {
     try {
         Keine.swapReplay(replays[args[1]], replays[args[2]]);
@@ -294,6 +331,7 @@ commands.swap = function(args,message) {
         sendMessage(message, `Error swapping`);
     }
 }
+
 commands.setDate = function(args,message) {
     let r = replays[args[1]];
     // TODO: error check me
@@ -306,20 +344,11 @@ commands.setDate = function(args,message) {
     log("setDate "+JSON.stringify(r));
     sendMessage(message, `setDate completed.`);
 }
+
 commands.organize = function(args, message) {
     Keine.organizeReplays(replays);
     saveReplays();
     sendMessage(message, 'Organized replays.');
-}
-commands.dumbFix = function(args, message) {
-    // for (let i = 0, ii = replays.length; i<ii; i++) {
-    //     let r = replays[i];
-    //    if (r.theater_date) {
-    //        r.theater_date = moment(r.theater_date).add(-4,'d').format("YYYY-MM-DD");
-    //    }
-    // }
-    // saveReplays();
-    sendMessage(message, 'Please do not press this button again.');
 }
 
 function formatReplay(index, replay) {
