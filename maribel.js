@@ -99,9 +99,9 @@ client.on('message', message => {
             });
             if(hasReplay) {
                 // you can't have more than 1 attachment per replay, so it's just singular replay
-                // instead of plural 
-                sendMessage(message, "Added " + replayCount + " replay");
-                saveReplays();
+                // instead of plural
+                sendMessage(message, "Added replay");
+                commands.organize("", message);
             }
         }
     }
@@ -147,6 +147,7 @@ client.on('message', message => {
                             break;
                         case 'organize':
                             commands.organize(args, message);
+                            sendMessage(message, "Organized replays.\nThis function occurs automatically when a replay is added now.");
                             break;
                         case 'swap':
                             commands.swap(args, message);
@@ -292,9 +293,9 @@ commands.add = function(args, message) {
         }
         replays.push(replay);
         sendMessage(message, "Added replay");
-        // commands.organize(args, message);
+        commands.organize(args, message);
         // console.log(replay);
-        saveReplays();
+        // saveReplays();
     }
 }
 commands.logs = function(message) {
@@ -350,7 +351,7 @@ commands.setDate = function(args,message) {
 commands.organize = function(args, message) {
     Keine.organizeReplays(replays);
     saveReplays();
-    sendMessage(message, 'Organized replays.');
+    // sendMessage(message, 'Organized replays.');
 }
 
 function formatReplay(index, replay) {
