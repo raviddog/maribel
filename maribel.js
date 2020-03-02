@@ -1,7 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('./config.json');
-const gameList = require('./games.json');
 var fs = require('fs');
 
 let Keine = require('./keine.js');
@@ -55,6 +54,8 @@ var schedule = [];
 // hold recent logging info so we can query it from discord instead of server side
 var MAX_RECENT_LOG_LENGTH = 20;
 var recentLogs = [];
+var gameList = [];
+gameList = loadFromJson('games');
 
 client.on('ready', () => {
     log(`Logged in as ${client.user.tag}`);
@@ -177,55 +178,56 @@ var commands = {};
 
 function getTodaySchedule() {
     //  get a formatted list of the upcoming replays
-
     var todayMinus2 = moment().add(-2, 'd').format('YYYY-MM-DD');
     var todayPlus5 = moment().add(5, 'd').format('YYYY-MM-DD');
-    var nextSchedule = replays.filter(function(r) {
+    var returnSchedule = [];
+
+    //  get list of replays dated for next theatre
+    var nextSchedule = [];
+    nextSchedule = replays.filter(function(r) {
         return todayMinus2 < r.theater_date && todayPlus5 > r.theater_date;
     });
-    var returnSchedule = [];
-    returnSchedule.push({
-        name: "TRT Host",
-        game: "unknown",
-        file: "none"
-    });
+
     //  trim discord tags and convert games
     nextSchedule.forEach(function(current) {
-        //  get end of url
         var filename = current.url.split('/').pop();
         var filecopy = filename;
-        var curGame;
+        var rpyGame = filename.split('_');
+
+        var curGame = "video";
+
         //  check if url is a replay file
         if(config.maribel.fileext.indexOf(filecopy.split('.').pop()) > -1) {
-            curGame = filename;
             //  find game
-            gameList.touhou.forEach(function(current) {
-                if(filename.findIndex(current) > -1) {
-                    curGame = current;
-                }
-                break;
+            var temp = gameList.find(function(r) {
+                return r.pref == rpyGame[0];
             });
-        } else {
-            //  not a file
-            //  temp
-            curGame = 'video';
+            //  put title
+            if(typeof temp !== 'undefined') {
+                curGame = temp.title;
+            } else {
+                curGame = filename;
+            }
         }
 
         //  trim discord tag from name
         var username = current.user.split('#').shift();
-        
-        returnSchedule.push({
-            name: username,
-            game: curGame,
-            file: filename
-        });
+
+        //  add schedule item to list if not host
+        if(username !== "TRT HOST") {
+            returnSchedule.push({
+                name: username,
+                game: curGame,
+                file: filename
+            });
+        }
     });
 
     return returnSchedule;
 }
 
 commands.getNextSchedule = function(message) {
-    var returnText = "Schedule:\n";
+    var returnText = "Schedule:\nHost Replay\n";
     var nextSchedule = getTodaySchedule();
     nextSchedule.forEach(function(current) {
         returnText = returnText + current.name + ': ' + current.game + ' (' + current.file + ')\n';
@@ -235,6 +237,7 @@ commands.getNextSchedule = function(message) {
 }
 
 function getScheduleTwitch() {
+    var returnText = "Schedule: Host Replay | ";
     var nextSchedule = getTodaySchedule();
     nextSchedule.forEach(function(current, index) {
         returnText = returnText + current.name + ': ' + current.game + ' | ';

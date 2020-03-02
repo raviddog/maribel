@@ -57,7 +57,7 @@ var timer;
 
 var COMMAND_QUOTAS = {
     default: {
-        wait: 30000
+        wait: 3000
         // messageCount: 20
     }
 }

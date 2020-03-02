@@ -1,17 +1,70 @@
-{
-    "touhou" : {
-        "th6" : "EoSD",
-        "th7" : "PCB",
-        "th8" : "IN",
-        "th9" : "PoFV",
-        "th10" : "MoF",
-        "th11" : "SA",
-        "th12" : "Blufo",
-        "th13" : "TD",
-        "th14" : "DDC",
-        "th15" : "LoLK",
-        "th16" : "HSiFS",
-        "th17" : "WBaWC",
-        "th128" : "GFW"
+[
+    {
+        "pref" : "th6",
+        "title": "EoSD"
+    },
+    {
+        "pref" : "th7",
+        "title" : "PCB"
+    },
+    {
+        "pref" : "th8",
+        "title" : "IN"
+    },
+    {
+        "pref" : "th9",
+        "title" : "PoFV"
+    },
+    {
+        "pref" : "th10",
+        "title" : "MoF"
+    },
+    {
+        "pref" : "th11",
+        "title" : "SA"
+    },
+    {
+        "pref" : "th12",
+        "title" : "Blufo"
+    },
+    {
+        "pref" : "th13",
+        "title" : "TD"
+    },
+    {
+        "pref" : "th14",
+        "title" : "DDC"
+    },
+    {
+        "pref" : "th15",
+        "title" : "LoLK"
+    },
+    {
+        "pref" : "th16",
+        "title" : "HSiFS"
+    },
+    {
+        "pref" : "th17",
+        "title" : "WBaWC"
+    },
+    {
+        "pref" : "th128",
+        "title" : "GFW"
+    },
+    {
+        "pref" : "thf",
+        "title" : "Fantasia"
+    },
+    {
+        "pref" : "thSSS",
+        "title" : "SSS"
+    },
+    {
+        "pref" : "th165",
+        "title" : "VD"
+    },
+    {
+        "pref" : "Main",
+        "title" : "HSoB?"
     }
-}
+]
