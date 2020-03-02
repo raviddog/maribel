@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const showdown = require('showdown');
+let converter = new showdown.Converter({tables: true});
 let moment = require('moment');
 let bodyParser = require('body-parser');
 
@@ -23,7 +25,7 @@ app.all('/api/github/payload', urlencodedParser, function(req,res) {
 	res.send("ok");
 });
 
-app.get('/schedule', function(req,res) {
+app.get('/oldschedule', function(req,res) {
 	console.log(req.query);
 	let scheduleRenderData = prepareScheduleFromReplayArray(
 			Maribel.getReplays(),
@@ -32,6 +34,54 @@ app.get('/schedule', function(req,res) {
 			}
 	);
 	res.render('schedule', scheduleRenderData);
+});
+
+app.get('/schedule', function(req, res) {
+	console.log(req.query);
+	let scheduleRenderData = prepareScheduleFromReplayArray(
+		Maribel.getReplays(),
+		{
+			showAll: req.query.all == 1
+		}
+	);
+
+	var htmltext = '<!DOCTYPE html><head><style>th, td {padding: 8px;\ntext-align: left;}\ntr:nth-child(even) {background-color: #e5e5e5;}\ntable {border: 1px solid black;}</style><title>TRT Schedule</title></head><body>';
+
+	var markdowntext = "# TRT Slightly Less Beta Replay Schedule Listing\n\n";
+	markdowntext += "This is the schedule page for Touhou Replay Theater, hosted every Sunday 7PM PST at <https://www.twitch.tv/touhou_replay_theater>.\n\n";
+	
+	if(req.query.all != 1) {
+		markdowntext += "[View all replays](./schedule?all=1)\n\n";
+	} else {
+		markdowntext += "[View unshown replays](./schedule)\n\n";
+	}
+
+	//	do last week so that its guaranteed(?) to create a new heading
+	var tempdate = moment().add(-7,'d').format('YYYY-MM-DD');
+
+	if(req.query.all == 1) {
+		//	set tempdate to the beginning of time i guess
+		//	beginning of 2017 should do
+		tempdate = moment("20170101", "YYYYMMDD");
+	}
+	
+	scheduleRenderData.replays.forEach(function(cur, index) {
+		if(cur.theater_date !== tempdate) {
+			//	different date, create new heading
+			tempdate = cur.theater_date;
+			markdowntext += "\n\n##" + moment(tempdate, "YYYY-MM-DD").format("MMMM Do YYYY");
+			markdowntext += "\n|ID |User |URL |Notes|\n|---|---|---|---|\n";
+		}
+		markdowntext += "|" + cur.id + "|" + cur.user + "|<" + cur.url + ">|" + cur.notes + "|\n";
+	});
+
+	markdowntext += "\n\nPage generated at " + moment().format("MMMM Do YYYY, h:mm:ss a");
+	markdowntext += "\n\n[View the old schedule](./oldschedule)";
+
+	htmltext += converter.makeHtml(markdowntext);
+	htmltext += "</body></html>";
+
+	res.send(htmltext);
 });
 
 // debug disable?
