@@ -179,68 +179,93 @@ var commands = {};
 
 function getTodaySchedule() {
     //  get a formatted list of the upcoming replays
-    var todayMinus2 = moment().add(-2, 'd').format('YYYY-MM-DD');
-    var todayPlus5 = moment().add(5, 'd').format('YYYY-MM-DD');
+    var todayMinus1 = moment().add(-1, 'd').format('YYYY-MM-DD');
+    var todayPlus6 = moment().add(6, 'd').format('YYYY-MM-DD');
     var returnSchedule = [];
 
     //  get list of replays dated for next theatre
     var nextSchedule = [];
     nextSchedule = replays.filter(function(r) {
-        return todayMinus2 < r.theater_date && todayPlus5 > r.theater_date;
+        //  replay is between yesterday and in 6 days
+        // return moment(r.theatre_date).isAfter(todayMinus1) && moment(r.theatre_date).isBefore(todayPlus6);
+        return todayMinus1 <= r.theater_date && todayPlus6 >= r.theater_date;
     });
 
-    //  trim discord tags and convert games
-    nextSchedule.forEach(function(current) {
-        var filename = current.url.split('/').pop();
-        var filecopy = filename;
-        var rpyGame = filename.split('_');
+    var scheduleDate;
 
-        var curGame = "video";
+    if(nextSchedule.length > 0) {
+        //  set date
+        scheduleDate = nextSchedule[0].theater_date;
 
-        //  check if url is a replay file
-        if(config.maribel.fileext.indexOf(filecopy.split('.').pop()) > -1) {
-            //  find game
-            var temp = gameList.find(function(r) {
-                return r.pref == rpyGame[0];
-            });
-            //  put title
-            if(typeof temp !== 'undefined') {
-                curGame = temp.title;
-            } else {
-                curGame = filename;
+        //  trim discord tags and convert games
+        nextSchedule.forEach(function(current) {
+            var filename = current.url.split('/').pop();
+            var filecopy = filename;
+            var rpyGame = filename.split('_');
+    
+            var curGame = "video";
+    
+            //  check if url is a replay file
+            if(config.maribel.fileext.indexOf(filecopy.split('.').pop()) > -1) {
+                //  find game
+                curGame = gameList.find(function(r) {
+                    return r.pref == rpyGame[0];
+                });
+                //  put title
+                if(typeof curGame !== 'undefined') {
+                    curGame = curGame.title;
+                } else {
+                    curGame = filename;
+                }
             }
-        }
+    
+            //  trim discord tag from name
+            var username = current.user.split('#').shift();
+    
+            //  add schedule item to list if not host
+            if(username !== "TRT HOST") {
+                returnSchedule.push({
+                    name: username,
+                    game: curGame,
+                    file: filename
+                });
+            }
+        });
 
-        //  trim discord tag from name
-        var username = current.user.split('#').shift();
+    } else {
+        //  placeholder date to indicate no replays
+        //  in future look for next theater date and write that
+        scheduleDate = moment("20170101", "YYYYMMDD");
+    }
 
-        //  add schedule item to list if not host
-        if(username !== "TRT HOST") {
-            returnSchedule.push({
-                name: username,
-                game: curGame,
-                file: filename
-            });
-        }
-    });
+    var returnObject = {
+        date: scheduleDate,
+        schedule: returnSchedule
+    };
 
-    return returnSchedule;
+    return returnObject;
 }
 
 commands.getNextSchedule = function(message) {
-    var returnText = "Schedule:\nHost Replay\n";
     var nextSchedule = getTodaySchedule();
-    nextSchedule.forEach(function(current) {
-        returnText = returnText + current.name + ': ' + current.game + ' (' + current.file + ')\n';
-    });
-    returnText = returnText + "The full schedule can be found at https://trt.mamizou.wtf/schedule";
+    var returnText;
+    if(nextSchedule.schedule.length > 0) {
+        returnText = "Schedule for " + moment(nextSchedule.date, "YYYY-MM-DD").format("MMMM Do YYYY") + ":\n\nHost Replay\n";
+        nextSchedule.schedule.forEach(function(current) {
+            returnText = returnText + current.name + ': ' + current.game + ' (' + current.file + ')\n';
+        });
+    } else {
+        //  no schedule
+        returnText = "No replays scheduled for next theatre.\n";
+    }
+    returnText = returnText + "\nThe full schedule can be found at https://trt.mamizou.wtf/schedule";
     sendMessage(message, returnText);
 }
 
 function getScheduleTwitch() {
     var returnText = "Schedule: Host Replay | ";
     var nextSchedule = getTodaySchedule();
-    nextSchedule.forEach(function(current, index) {
+    nextSchedule.schedule.forEach(function(current, index) {
         returnText = returnText + current.name + ': ' + current.game + ' | ';
     });
     returnText = returnText + "Full schedule: https://trt.mamizou.wtf/schedule";

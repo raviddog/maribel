@@ -69,7 +69,7 @@ app.get('/schedule', function(req, res) {
 		if(cur.theater_date !== tempdate) {
 			//	different date, create new heading
 			tempdate = cur.theater_date;
-			markdowntext += "\n\n##" + moment(tempdate, "YYYY-MM-DD").format("MMMM Do YYYY");
+			markdowntext += "\n\n## " + moment(tempdate, "YYYY-MM-DD").format("MMMM Do YYYY");
 			markdowntext += "\n|ID |User |URL |Notes|\n|---|---|---|---|\n";
 		}
 		markdowntext += "|" + cur.id + "|" + cur.user + "|<" + cur.url + ">|" + cur.notes + "|\n";
