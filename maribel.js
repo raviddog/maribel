@@ -63,14 +63,14 @@ client.on('ready', () => {
 });
 
 // delete replay if submitter deletes their original message
-client.on('messageDelete', message => {
-    var index = replays.findIndex(replay => replay.msgid == message.id);
-    if(index > -1) {
-        replays.splice(index, 1);
-        sendMessageLog(message, 'Removed replay from ' + message.author.tag, 'Removed replay from ' + message.author.tag);
-        saveReplays();
-    }
-});
+// client.on('messageDelete', message => {
+//     var index = replays.findIndex(replay => replay.msgid == message.id);
+//     if(index > -1) {
+//         replays.splice(index, 1);
+//         sendMessageLog(message, 'Removed replay from ' + message.author.tag, 'Removed replay from ' + message.author.tag);
+//         saveReplays();
+//     }
+// });
 
 client.on('message', message => {
     // ignore bots messages
@@ -286,15 +286,14 @@ commands.remove = function(n, message) {
 }
 
 commands.help = function(arg, message) {
-     var msg =   `!schedule - view upcoming schedule
-!add (link) (notes) - manually add a non-replay file
-Directly uploading a replay file to the channel will also add it.
-Deleting your message will remove the associated replay
-\n
-VIP commands:
-!remove # - remove specified replay from the schedule
-!organize - add dates to all new replays
-!setDate - manually set a replay date`;
+     var msg =   "!schedule - view upcoming schedule\n" +
+"!add (link) (notes) - manually add a non-replay file\n" +
+"Directly uploading a supported replay file (`.rpy` `.dat` `.rep`) to the channel will also add it.\n" +
+"\n" +
+"VIP commands:\n" +
+"!remove # - remove specified replay from the schedule\n" +
+"!organize - add dates to all new replays\n" +
+"!setDate - manually set a replay date";
     // sendPrivateMessage(message, msg);
     sendMessage(message, msg);
 }
