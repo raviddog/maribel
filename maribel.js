@@ -179,16 +179,16 @@ var commands = {};
 
 function getTodaySchedule() {
     //  get a formatted list of the upcoming replays
-    var todayMinus1 = moment().add(-1, 'd').format('YYYY-MM-DD');
-    var todayPlus6 = moment().add(6, 'd').format('YYYY-MM-DD');
+    var lastWeek = moment().add(-1, 'd').format('YYYY-MM-DD');
+    var nextWeek = moment().add(5, 'd').format('YYYY-MM-DD');
     var returnSchedule = [];
 
     //  get list of replays dated for next theatre
     var nextSchedule = [];
     nextSchedule = replays.filter(function(r) {
         //  replay is between yesterday and in 6 days
-        // return moment(r.theatre_date).isAfter(todayMinus1) && moment(r.theatre_date).isBefore(todayPlus6);
-        return todayMinus1 <= r.theater_date && todayPlus6 >= r.theater_date;
+        // return moment(r.theatre_date).isAfter(lastWeek) && moment(r.theatre_date).isBefore(nextWeek);
+        return lastWeek <= r.theater_date && nextWeek >= r.theater_date;
     });
 
     var scheduleDate;
