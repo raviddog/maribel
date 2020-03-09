@@ -72,7 +72,8 @@ app.get('/schedule', function(req, res) {
 			markdowntext += "\n\n## " + moment(tempdate, "YYYY-MM-DD").format("MMMM Do YYYY");
 			markdowntext += "\n|ID |User |URL |Notes|\n|---|---|---|---|\n";
 		}
-		markdowntext += "|" + cur.id + "|" + cur.user + "|<" + cur.url + ">|" + cur.notes + "|\n";
+		var new_notes = cur.notes.replace(/\r?\n|\r/g, " ");
+		markdowntext += "|" + cur.id + "|" + cur.user + "|<" + cur.url + ">|" + new_notes + "|\n";
 	});
 
 	markdowntext += "\n\nPage generated at " + moment().format("MMMM Do YYYY, h:mm:ss a");
