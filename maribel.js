@@ -145,6 +145,9 @@ client.on('message', message => {
                         case 'setDate':
                             commands.setDate(args, message);
                             break;
+                        case 'setTheaterDate':
+                            commands.setTheatreDate(args, message);
+                            break;
                         case 'organize':
                             commands.organize(args, message);
                             sendMessage(message, "Organized replays.\nThis function occurs automatically when a replay is added now.");
@@ -293,7 +296,8 @@ commands.help = function(arg, message) {
 "VIP commands:\n" +
 "!remove # - remove specified replay from the schedule\n" +
 "!organize - add dates to all new replays\n" +
-"!setDate - manually set a replay date";
+"!setDate - manually set a replay date\n" +
+"!setTheaterDate - change the date for all replays of a certain date";
     // sendPrivateMessage(message, msg);
     sendMessage(message, msg);
 }
@@ -370,6 +374,22 @@ commands.setDate = function(args,message) {
 
     log("setDate "+JSON.stringify(r));
     sendMessage(message, `setDate completed.`);
+}
+
+commands.setTheatreDate = function(args, message) {
+    if(args.length >= 3) {
+        var count = 0;
+        var curDate = moment(args[1]).format('YYYY-MM-DD');
+        var setDate = moment(args[2]).format('YYYY-MM-DD');
+        replays.forEach(function(current) {
+            if(current.theater_date == curDate) {
+                current.theater_date = setDate;
+                count++;
+            }
+        });
+        sendMessage(message, ('Updated ' + count) + ((count == 1) ? ' replay' : ' replays'));
+        saveReplays();
+    }
 }
 
 commands.organize = function(args, message) {
