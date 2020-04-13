@@ -38,7 +38,7 @@ app.get('/schedule', function(req, res) {
 			showAll: req.query.all == 1
 		}
 	);
-	let theaters = _.groupBy(scheduleData, 'theater_date')
+	let theaters = _.groupBy(scheduleData.replays, 'theater_date')
 
 	let theaterArray = [];
 
