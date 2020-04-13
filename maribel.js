@@ -63,14 +63,14 @@ client.on('ready', () => {
 });
 
 // delete replay if submitter deletes their original message
-client.on('messageDelete', message => {
-    var index = replays.findIndex(replay => replay.msgid == message.id);
-    if(index > -1) {
-        replays.splice(index, 1);
-        sendMessageLog(message, 'Removed replay from ' + message.author.tag, 'Removed replay from ' + message.author.tag);
-        saveReplays();
-    }
-});
+// client.on('messageDelete', message => {
+//     var index = replays.findIndex(replay => replay.msgid == message.id);
+//     if(index > -1) {
+//         replays.splice(index, 1);
+//         sendMessageLog(message, 'Removed replay from ' + message.author.tag, 'Removed replay from ' + message.author.tag);
+//         saveReplays();
+//     }
+// });
 
 client.on('message', message => {
     // ignore bots messages
@@ -145,6 +145,9 @@ client.on('message', message => {
                         case 'setDate':
                             commands.setDate(args, message);
                             break;
+                        case 'setTheaterDate':
+                            commands.setTheatreDate(args, message);
+                            break;
                         case 'organize':
                             commands.organize(args, message);
                             sendMessage(message, "Organized replays.\nThis function occurs automatically when a replay is added now.");
@@ -179,16 +182,16 @@ var commands = {};
 
 function getTodaySchedule() {
     //  get a formatted list of the upcoming replays
-    var todayMinus1 = moment().add(-1, 'd').format('YYYY-MM-DD');
-    var todayPlus6 = moment().add(6, 'd').format('YYYY-MM-DD');
+    var lastWeek = moment().add(-1, 'd').format('YYYY-MM-DD');
+    var nextWeek = moment().add(5, 'd').format('YYYY-MM-DD');
     var returnSchedule = [];
 
     //  get list of replays dated for next theatre
     var nextSchedule = [];
     nextSchedule = replays.filter(function(r) {
         //  replay is between yesterday and in 6 days
-        // return moment(r.theatre_date).isAfter(todayMinus1) && moment(r.theatre_date).isBefore(todayPlus6);
-        return todayMinus1 <= r.theater_date && todayPlus6 >= r.theater_date;
+        // return moment(r.theatre_date).isAfter(lastWeek) && moment(r.theatre_date).isBefore(nextWeek);
+        return lastWeek <= r.theater_date && nextWeek >= r.theater_date;
     });
 
     var scheduleDate;
@@ -286,15 +289,15 @@ commands.remove = function(n, message) {
 }
 
 commands.help = function(arg, message) {
-     var msg =   `!schedule - view upcoming schedule
-!add (link) (notes) - manually add a non-replay file
-Directly uploading a replay file to the channel will also add it.
-Deleting your message will remove the associated replay
-\n
-VIP commands:
-!remove # - remove specified replay from the schedule
-!organize - add dates to all new replays
-!setDate - manually set a replay date`;
+     var msg =   "!schedule - view upcoming schedule\n" +
+"!add (link) (notes) - manually add a non-replay file\n" +
+"Directly uploading a supported replay file (`.rpy` `.dat` `.rep`) to the channel will also add it.\n" +
+"\n" +
+"VIP commands:\n" +
+"!remove # - remove specified replay from the schedule\n" +
+"!organize - add dates to all new replays\n" +
+"!setDate - manually set a replay date\n" +
+"!setTheaterDate - change the date for all replays of a certain date";
     // sendPrivateMessage(message, msg);
     sendMessage(message, msg);
 }
@@ -371,6 +374,22 @@ commands.setDate = function(args,message) {
 
     log("setDate "+JSON.stringify(r));
     sendMessage(message, `setDate completed.`);
+}
+
+commands.setTheatreDate = function(args, message) {
+    if(args.length >= 3) {
+        var count = 0;
+        var curDate = moment(args[1]).format('YYYY-MM-DD');
+        var setDate = moment(args[2]).format('YYYY-MM-DD');
+        replays.forEach(function(current) {
+            if(current.theater_date == curDate) {
+                current.theater_date = setDate;
+                count++;
+            }
+        });
+        sendMessage(message, ('Updated ' + count) + ((count == 1) ? ' replay' : ' replays'));
+        saveReplays();
+    }
 }
 
 commands.organize = function(args, message) {
