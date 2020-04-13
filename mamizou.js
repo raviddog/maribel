@@ -53,7 +53,7 @@ app.get('/schedule', function(req, res) {
 	let scheduleRenderData = {
 		theaters: theaterArray,
 		allFlag: req.query.all,
-		timestamp: theaterData.timestamp
+		timestamp: scheduleData.timestamp
 	};
 	
 	res.render('schedule', scheduleRenderData);
