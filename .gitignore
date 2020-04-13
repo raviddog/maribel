@@ -2,3 +2,4 @@ node_modules/
 config.json
 package-lock.json
 replays.json
+local_stuff/
