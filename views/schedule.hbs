@@ -1,28 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Touhou Repay Theater Schedule</title>
-	<style>
-
-	</style>
+	<title>TRT Schedule</title>
+	<style>th, td {padding: 8px;\ntext-align: left;}\ntr:nth-child(even) {background-color: #e5e5e5;}\ntable {border: 1px solid black;}</style>
 </head>
 <body>
-<h1>TRT Extremely Beta Replay Schedule Listing</h1>
+<h1>TRT Even Less Beta Replay Schedule Listing</h1>
+<p>This is the schedule page for Touhou Replay Theater, hosted every Sunday 7PM PST at <a href="https://www.twitch.tv/touhou_replay_theater">TRT</a>.</p>
+<p>
+	{{#if allFlag}}
+		<a href="/schedule">View unshown replays.</a>
+	{{else}}
+		<a href="/schedule">View all replays.</a>
+	{{/if}}
+</p>
+{{#each theaters}}
+<h3>{{this.display_date}}</h3>
 <table border="1">
 	<thead>
 		<tr>
 			<th>ID</th>
-			<th>Theater Date</th>
 			<th>User</th>
 			<th>URL</th>
 			<th>Notes</th>
 		</tr>
 	</thead>
 	<tbody>
-		{{#each replays}}
+		{{#each this.replays}}
 		<tr>
 			<td>{{this.id}}</td>
-			<td>{{this.theater_date}}</td>
 			<td>{{this.user}}</td>
 			<td><a href="{{this.url}}">{{this.url}}</a></td>
 			<td>{{this.notes}}</td>
@@ -30,6 +36,7 @@
 		{{/each}}
 	</tbody>
 </table>
+{{/each}}
 <pre>Page generated at: {{timestamp}}</pre>
 </body>
 </html>

@@ -10,10 +10,12 @@
     "express": "^4.17.1",
     "handlebars": "^4.5.2",
     "hbs": "^4.0.6",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "mustache": "^3.1.0",
     "showdown": "^1.9.1",
     "sqlite3": "^4.1.0",
-    "tmi.js": "^1.5.0"
+    "tmi.js": "^1.5.0",
+    "underscore": "^1.10.2"
   }
 }

@@ -25,6 +25,7 @@ VAR API = {
 				notes TEXT,
 				msgid VARCHAR(255),
 				theater_date VARCHAR(16),
+				is_deleted INTEGER
 			`);
 
 			Maribel.devLog("setupDatabase INSERT FROM replays");
