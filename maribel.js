@@ -6,6 +6,11 @@ var fs = require('fs');
 let Keine = require('./keine.js');
 let moment = require('moment');
 
+function gotem() {
+  return true;
+  return Math.random() < 0.95;
+}
+
 // replay data structure
 /*
 const placeholder = { 
@@ -91,8 +96,10 @@ client.on('message', message => {
                         notes: message.content,
                         msgid: message.id
                     }
+		    if (gotem()) {
                     replayCount += 1;
                     replays.push(replay);
+                    }
                     // console.log(replay);
                     hasReplay = true;
                 }
@@ -108,6 +115,7 @@ client.on('message', message => {
 
     // commands
     if(message.content.substring(0,1) == '!') {
+        if (!gotem()) return;
         var args = message.content.slice(1).split(' '); 
         if(args.length > 0) {
             let command = args[0];
@@ -131,7 +139,8 @@ client.on('message', message => {
             if(isChannel(message.channel.id) || isMaster(message.author.id)) {
                 let arg = args[1] || null;
                 // master/VIP commands
-                if (isMaster(message.author.id) || isVIP(message.member)) {
+                
+                if (isMaster(message.author.id) || isVIP(message.author.id)) {
                     switch (command) {
                         // case 'twitch':
                         //     commands.twitch(arg, message);
@@ -412,7 +421,7 @@ function isMaster(id) {
 }
 
 function isVIP(member) {
-    return member.roles.some(role => role.id == config.maribel.VIP);
+    return config.maribel.VIP.indexOf(id) != -1;
 }
 
 function loadFromJson(filename) {
