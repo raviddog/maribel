@@ -420,7 +420,7 @@ function isMaster(id) {
     return config.maribel.master.indexOf(id) != -1;
 }
 
-function isVIP(member) {
+function isVIP(id) {
     return config.maribel.VIP.indexOf(id) != -1;
 }
 
