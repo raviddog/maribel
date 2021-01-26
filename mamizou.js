@@ -59,6 +59,10 @@ app.get('/schedule', function(req, res) {
 	res.render('schedule', scheduleRenderData);
 });
 
+app.get('/json', function(req, res) {
+	res.send(JSON.stringify(Maribel.getReplays()));
+});
+
 // debug disable?
 app.listen(port, function() {
 	console.log(`mamizou module listening on ${port}`);
