@@ -11,10 +11,9 @@ var privateKey  = fs.readFileSync('ssl/private.key', 'utf8');
 var certificate = fs.readFileSync('ssl/certificate.crt', 'utf8');
 var cart = fs.readFileSync('ssl/ca_bundle.crt', 'utf8');
 
-const httpServer = http.createServer((req, res) => {
-   res.statusCode = 301;
-   res.setHeader('Location', `https://raviddog.site` + req.url);
-   res.end(); // make sure to call send() or end() to send the response
+const httpServer = express();
+httpServer.get('*', function(req, res) {
+	res.redirect('https://raviddog.site' + req.url);
 });
 
 var credentials = {key: privateKey, cert: certificate, ca: cart};
