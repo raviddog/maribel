@@ -1,11 +1,24 @@
 const express = require('express');
 const app = express();
 const port = 80;
-const showdown = require('showdown');
-let converter = new showdown.Converter({tables: true});
 let moment = require('moment');
 let bodyParser = require('body-parser');
 let _ = require('lodash');
+
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+var privateKey  = fs.readFileSync('ssl/private.key', 'utf8');
+var certificate = fs.readFileSync('ssl/certificate.crt', 'utf8');
+var cart = fs.readFileSync('ssl/ca_bundle.crt', 'utf8');
+
+const httpServer = http.createServer((req, res) => {
+   res.statusCode = 301;
+   res.setHeader('Location', `https://raviddog.site/${req.url}`);
+   res.end(); // make sure to call send() or end() to send the response
+});
+
+var credentials = {key: privateKey, cert: certificate, ca: cart};
 
 var urlencodedParser = bodyParser.urlencoded({
 	limit: '25MB'
@@ -59,14 +72,21 @@ app.get('/schedule', function(req, res) {
 	res.render('schedule', scheduleRenderData);
 });
 
-app.get('/json', function(req, res) {
-	res.send(JSON.stringify(Maribel.getReplays()));
-});
+var httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(80);
+httpsServer.listen(443);
+
+// app.get('/json', function(req, res) {
+// 	res.send(JSON.stringify(Maribel.getReplays()));
+// });
 
 // debug disable?
-app.listen(port, function() {
-	console.log(`mamizou module listening on ${port}`);
-});
+// app.listen(port, function() {
+// 	console.log(`mamizou module listening on ${port}`);
+// });
+
+
 
 module.exports = {
 	_app: app, // do we expose it?,
