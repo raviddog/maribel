@@ -5,16 +5,11 @@ let bodyParser = require('body-parser');
 let _ = require('lodash');
 
 var fs = require('fs');
-var http = require('http');
 var https = require('https');
 var privateKey  = fs.readFileSync('ssl/private.key', 'utf8');
 var certificate = fs.readFileSync('ssl/certificate.crt', 'utf8');
 var cart = fs.readFileSync('ssl/ca_bundle.crt', 'utf8');
 
-const httpServer = express();
-httpServer.get('*', function(req, res) {
-	res.redirect('https://raviddog.site' + req.url);
-});
 
 var credentials = {key: privateKey, cert: certificate, ca: cart};
 
@@ -38,6 +33,10 @@ app.all('/api/github/payload', urlencodedParser, function(req,res) {
 });
 
 app.get('/oldschedule', function(req,res) {
+	res.redirect('/schedule');
+});
+
+app.get('//schedule', function(req, res) {
 	res.redirect('/schedule');
 });
 
@@ -71,8 +70,6 @@ app.get('/schedule', function(req, res) {
 });
 
 var httpsServer = https.createServer(credentials, app);
-
-httpServer.listen(80);
 httpsServer.listen(443);
 
 // app.get('/json', function(req, res) {
