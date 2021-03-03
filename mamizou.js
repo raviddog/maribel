@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const port = 80;
 let moment = require('moment');
 let bodyParser = require('body-parser');
 let _ = require('lodash');
@@ -14,7 +13,7 @@ var cart = fs.readFileSync('ssl/ca_bundle.crt', 'utf8');
 
 const httpServer = http.createServer((req, res) => {
    res.statusCode = 301;
-   res.setHeader('Location', `https://raviddog.site/${req.url}`);
+   res.setHeader('Location', `https://raviddog.site${req.url}`);
    res.end(); // make sure to call send() or end() to send the response
 });
 
