@@ -270,7 +270,7 @@ commands.getNextSchedule = function(message) {
         //  no schedule
         returnText = "No replays scheduled for next theatre.\n";
     }
-    returnText = returnText + "\nThe full schedule can be found at https://trt.mamizou.wtf/schedule";
+    returnText = returnText + "\nThe full schedule can be found at http://raviddog.site/schedule";
     sendMessage(message, returnText);
 }
 
@@ -280,7 +280,7 @@ function getScheduleTwitch() {
     nextSchedule.schedule.forEach(function(current, index) {
         returnText = returnText + current.name + ': ' + current.game + ' | ';
     });
-    returnText = returnText + "Full schedule: https://trt.mamizou.wtf/schedule";
+    returnText = returnText + "Full schedule: http://raviddog.site/schedule";
     return returnText;
 }
 

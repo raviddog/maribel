@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 80;
 const showdown = require('showdown');
 let converter = new showdown.Converter({tables: true});
 let moment = require('moment');
