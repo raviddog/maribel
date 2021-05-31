@@ -219,6 +219,17 @@ commands.schedule = function(message) {
     }
 }
 
+commands.removeTheater = function(arg, message) {
+    //  deletes a theater
+    //  be super careful using this
+    //  maybe ill make a backup everytime you use it
+    if(arg < theaters.length) {
+        var run = theaters.splice(arg, 1);
+        sendMessage(message, "Removed \"" + run.title + "\"");
+    } else {
+        sendMessage(message, "Invalid theater ID");
+    }
+}
 
 commands.setTheaterDesc = function(args, message) {
     //  !setTheaterDesc id desc
