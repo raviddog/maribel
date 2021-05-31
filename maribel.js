@@ -31,31 +31,13 @@ const placeholder = {
 var Renko = null;
 
 module.exports = {
-    initialize: function(isDebug) {
-        if (isDebug) {
-            return;
-        }
+    initialize: function() {
         client.login(config.maribel.token);
+        generateActiveTheaterCache();
     },
     setRenko: function(r) {
         Renko = r;
-    },
-    sendMessage: function(msg) {
-        sendMessageToChannel(config.maribel.channel, msg);
-    },
-    devLog: function(s) {
-        sendMessageToChannel(config.maribel.logChannel, s);
-    },
-    // move replays?
-    getReplays: function() {
-        return replays;
-    },
-    getSchedule: function() {
-        return getScheduleTwitch();
     }
-    // sendMessage: function(msg) {
-    //     sendMessageToChannel(config.maribel.channel, msg);
-    // }
 }
 
 var theaters = [];
@@ -66,7 +48,7 @@ theaters = loadFromJson('theaters');
 gameList = loadFromJson('games');
 
 client.on('ready', () => {
-    log(`Logged in as ${client.user.tag}`);
+    console.log(`Logged in as ${client.user.tag}`);    
     client.user.setActivity(config.maribel.game, {type : 'PLAYING'});
 });
 
@@ -87,12 +69,11 @@ client.on('message', message => {
     // add attachments as replays
     if(isChannel(message.channel.id)) {
         if(message.attachments.size != 0) {
-            var hasReplay = false;
             message.attachments.forEach(attachment => {
                 var extension = attachment.filename.split('.').pop();
                 if(config.maribel.fileext.indexOf(extension) != -1) {
                     //replay file
-                    commands.submitReplay(attachment.url, message.content, message);
+                    commands.submitReplay(attachment.url, attachment.filename, message.content, message);
                 }
             });
         }
@@ -103,18 +84,6 @@ client.on('message', message => {
         var args = message.content.slice(1).split(' '); 
         if(args.length > 0) {
             let command = args[0];
-            
-            // master commands from anywhere
-            // if(isMaster(message.author.id)) {
-            //     switch(command) {
-            //         case 'logs':
-            //             commands.logs(message);
-            //             break;
-            //         case 'twitchsay':
-            //             commands.twitchsay(args, message);
-            //             break;
-            //     }
-            // }
 
             // check if command is in replay channel or by master
             if(isChannel(message.channel.id) || isMaster(message.author.id)) {
@@ -138,21 +107,6 @@ client.on('message', message => {
                         case 'archiveTheater':
                             commands.archiveTheater(arg, message);
                             break;
-                        // case 'twitch':
-                        //     commands.twitch(arg, message);
-                        // //     break;
-                        // case 'settheatre':
-                        //     commands.theatre(arg, message);
-                        //     break;
-                        // case 'remove': 
-                        //     commands.remove(arg, message);
-                        //     break;
-                        // case 'setDate':
-                        //     commands.setDate(args, message);
-                        //     break;
-                        // case 'setTheaterDate':
-                        //     commands.setTheatreDate(args, message);
-                        //     break;
                     }
                 }
 
@@ -162,7 +116,7 @@ client.on('message', message => {
                         commands.theaters(message);
                         break;
                     case 'viewTheater':
-                        // commands.viewTheater(arg, message);
+                        commands.viewTheater(arg, message);
                         break;
                     case 'schedule':
                         commands.schedule(message);
@@ -170,17 +124,6 @@ client.on('message', message => {
                     case 'add':
                         commands.add(args, message);
                         break;
-                    
-                    // case 'replays':
-                    // case 'schedule':
-                    //     commands.getNextSchedule(message);
-                    //     break;
-                    // case 'help':
-                    //     commands.help(arg, message);
-                    //     break;
-                    // case 'add':
-                    //     commands.add(args, message);
-                    //     break;
                 }  
             }
         }
@@ -200,10 +143,10 @@ commands.createTheater = function(args, message) {
     //  !createTheater date title
     if(args.length > 2) {
         var theater = {
-            date : new Date(args[1]),
+            date : moment(args[1]),
             host : message.author.tag,
             title : "",
-            description : "",
+            desc : "No description",
             vod : "",
             active : true,
             replays : []
@@ -225,7 +168,6 @@ commands.createTheater = function(args, message) {
         var showDate = moment(theater.date, "YYYY-MM-DD").format("MMMM Do YYYY");
         sendMessage(message, "Created Theater #" + theaters.length + ": \"" + theater.title + "\" by " + theater.host + ", scheduled for " + showDate);
         theaters.push(theater);
-        
         save();
         generateActiveTheaterCache();
 
@@ -237,18 +179,43 @@ commands.createTheater = function(args, message) {
 
 commands.theaters = function(message) {
     //  !theaters
-    var data = "List of active theaters: \n\n";
+    var data = "List of active theaters:";
     activeTheaters.forEach( function(value) {
         data += "\n\n#" + value + ": \"" + theaters[value].title + "\" (" + theaters[value].replays.length + " replays)\n     " + theaters[value].desc;
     });
 
-    data += "\nFor information on inactive theaters, please check the site";
+    data += "\n\nFor information on inactive theaters, please check the site";
     sendMessage(message, data);
 }
 
 commands.viewTheater = function(arg, message) {
     //  !viewTheater id
+    if(arg < theaters.length) {
+        //  valid id
+        var run = theaters[arg];
+        var data = "Theater: \"" + run.title + "\"\n*" + run.desc + "*\n\n";
+        run.replays.forEach( function (value, index) {
+            data += value.user + ": " + value.game + "\n";
+        });
+        sendMessage(message, data);
+    }
 }
+commands.schedule = function(message) {
+    //  view discord formatted schedule
+    if(currentSchedule != -1) {
+        //  this is the same as viewtheater but with a slight text change
+        //  not sure how to combine them and dont particularly care
+        var run = theaters[currentSchedule];
+        var data = "Next scheduled theater: \"" + run.title + "\"\n*" + run.desc + "*\n\n";
+        run.replays.forEach( function (value, index) {
+            data += value.user + ": " + value.game + "\n";
+        });
+        sendMessage(message, data);
+    } else {
+        sendMessage(message, "No theater scheduled at this moment");
+    }
+}
+
 
 commands.setTheaterDesc = function(args, message) {
     //  !setTheaterDesc id desc
@@ -261,7 +228,7 @@ commands.setTheaterDesc = function(args, message) {
                 }
             });
     
-            theaters[args[1]].description = desc;
+            theaters[args[1]].desc = desc;
             sendMessage(message, "Updated Theater \"" + theaters[args[1]].title + "\" description");
     
             save();
@@ -275,7 +242,7 @@ commands.setTheaterDesc = function(args, message) {
     }
 }
 
-commands.submitReplay = function(link, desc, message) {
+commands.submitReplay = function(link, filename, desc, message) {
     //  should go through this function even if the replay is attached to message
     //  !submitReplay link desc
 
@@ -288,7 +255,9 @@ commands.submitReplay = function(link, desc, message) {
         shortgame: ""
     }
 
-
+    //  temp
+    replay.game = filename;
+    replay.shortgame = filename;
 
     //  TODO
     //  optionally attempt to decode replay here
@@ -299,7 +268,7 @@ commands.submitReplay = function(link, desc, message) {
     } else if(activeTheaters.length == 1) {
         theaters[activeTheaters[0]].replays.push(replay);
         save();
-        sendMessage(message, "Added replay to \"" + theaters[args[1]].title + "\"");
+        sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
     } else {
         //  no active theaters
         sendMessage(message, "There are no theaters active to submit to");
@@ -309,7 +278,7 @@ commands.submitReplay = function(link, desc, message) {
 commands.showTheater = function(arg, message) {
     //  !showTheater id
     //  for now, can only show 1 theater at a time (makes sense, probs wont change but eh)    
-    if(currentSchedule != -1) {
+    if(currentSchedule == -1) {
         if(arg == activeTheaters.find(function(value) {
             return value == arg
         })) {
@@ -338,6 +307,7 @@ commands.unshowTheater = function(arg, message) {
             currentSchedule = -1;
             theaters[arg].active = true;
             sendMessage(message, "Restored theater. Submissions are reopened.");
+            generateActiveTheaterCache();
         }
     } else {
         //  invalid id
@@ -352,32 +322,11 @@ commands.archiveTheater = function(arg, message) {
         theaters[currentSchedule].vod = arg;
         sendMessage(message, "Theater \"" + theaters[currentSchedule].title + "\" archived.");
         currentSchedule = -1;
+        generateActiveTheaterCache();
     } else {
         //  no theater being shown so nothing to archive
         sendMessage(message, "No theater being shown, nothing to archive");
     }
-}
-
-commands.schedule = function(message) {
-    //  view discord formatted schedule
-    if(currentSchedule != -1) {
-        var run = theaters[currentSchedule];
-        var data = "Next scheduled theater: \"" + run.title + "\"\n*" + run.desc + "*\n\n";
-        run.replays.forEach( function (value, index) {
-            data += value.user + ": " + value.game + "\n";
-        });
-    } else {
-        sendMessage(message, "No theater scheduled at this moment");
-    }
-}
-
-function generateActiveTheaterCache() {
-    activeTheaters = [];
-    theaters.forEach( function (value, index) {
-        if(value.active) {
-            activeTheaters.push(index);
-        }
-    });
 }
 
 commands.add = function(args, message) {
@@ -392,11 +341,23 @@ commands.add = function(args, message) {
                 }
             });
         }
-        commands.submitReplay(args[1], desc, message);
+        
+        var templink = args[1];
+        var filename = templink.split("/").pop();
+        commands.submitReplay(args[1], filename, desc, message);
     } else {
         //  put a link
         sendMessage(message, "No replay link provided");
     }
+}
+
+function generateActiveTheaterCache() {
+    activeTheaters = [];
+    theaters.forEach( function (value, index) {
+        if(value.active) {
+            activeTheaters.push(index);
+        }
+    });
 }
 
 function isChannel(id) {
@@ -412,7 +373,7 @@ function isVIP(id) {
 }
 
 function save() {
-    saveToJson("theaters". theaters);
+    saveToJson("theaters", theaters);
 }
 
 function loadFromJson(filename) {
@@ -422,16 +383,16 @@ function loadFromJson(filename) {
         let data = fs.readFileSync(fullFilename);
         result = JSON.parse(data)
     } catch (err) {
-        log(err);
+        console.log(err);
         // result = [];
     }
     return result;
 }
 
 function saveToJson(filename, data) {
-    let fullFilename = filename+'.json';
-    let backupFile = filename+Date.now()+'.json';
-    fs.writeFile(fullFilename, data,
+    let fullFilename = filename + '.json';
+    let backupFile = filename + Date.now() + '.json';
+    fs.writeFile(fullFilename, JSON.stringify(data),
         function(err) {
             if (err) {
                 log(err);
@@ -439,33 +400,21 @@ function saveToJson(filename, data) {
                 // log(`Saved ${fullFilename} to disk`);
             }
     });
-    fs.writeFile(backupFile, data,
-        function(err) {
-            if (err) {
-                log(err);
-            } else {
-                // log(`Saved ${fullFilename} to disk`);
-            }
-    });
+    // fs.writeFile(backupFile, JSON.stringify(data),
+    //     function(err) {
+    //         if (err) {
+    //             log(err);
+    //         } else {
+    //             // log(`Saved ${fullFilename} to disk`);
+    //         }
+    // });
 }
-
-
 
 function sendMessage(message, reply) {
     sendMessageToChannel(message.channel.id, reply);    
 }
 
-function log(msg) {
-    let formattedMsg = `[${getDateTime()}] ${msg}`;
-    if (recentLogs.length >= MAX_RECENT_LOG_LENGTH) {
-        recentLogs.shift();
-    }
-    recentLogs.push(formattedMsg);
-    console.log(formattedMsg);
+function sendMessageToChannel(channelId, msg) {
+    client.channels.get(channelId).send(msg)
+        .catch(console.log);
 }
-
-function getDateTime() {
-    return (new Date()).toISOString();
-}
-
-
