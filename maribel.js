@@ -124,6 +124,9 @@ client.on('message', message => {
                     case 'add':
                         commands.add(args, message);
                         break;
+                    case 'help':
+                        commands.help(message);
+                        break;
                 }  
             }
         }
@@ -279,9 +282,10 @@ commands.showTheater = function(arg, message) {
     //  !showTheater id
     //  for now, can only show 1 theater at a time (makes sense, probs wont change but eh)    
     if(currentSchedule == -1) {
-        if(arg == activeTheaters.find(function(value) {
-            return value == arg
-        })) {
+        var checkactive = activeTheaters.find( function(value) {
+            return value == arg;
+        });
+        if(arg == checkactive) {
             theaters[arg].active = false;
             currentSchedule = arg;
             generateActiveTheaterCache();
@@ -349,6 +353,21 @@ commands.add = function(args, message) {
         //  put a link
         sendMessage(message, "No replay link provided");
     }
+}
+
+commands.help = function(message) {
+    var msg =   "Host Commands:\n\n" +
+                " - !createTheater date title\n" + 
+                " - !setTheaterDesc id description\n" + 
+                " - !showTheater id\n" + 
+                " - !unshowTheater id\n" + 
+                " - !archiveTheater vodurl\n" +
+                "\nCommands:\n\n" +
+                " - !theaters\n" +
+                " - !viewTheater id\n" +
+                " - !schedule\n" +
+                " - !add link description\n";
+    sendMessage(message, msg);
 }
 
 function generateActiveTheaterCache() {
