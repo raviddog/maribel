@@ -96,19 +96,19 @@ client.on('message', message => {
                 
                 if (isMaster(message.author.id) || isVIP(message.author.id)) {
                     switch (command) {
-                        case 'createTheater':
+                        case 'create':
                             commands.createTheater(args, message);
                             break;
-                        case 'setTheaterDesc':
+                        case 'setdesc':
                             commands.setTheaterDesc(args, message);
                             break;
-                        case 'showTheater':
+                        case 'show':
                             commands.showTheater(arg, message);
                             break;
-                        case 'unshowTheater':
+                        case 'unshow':
                             commands.unshowTheater(arg, message);
                             break;
-                        case 'archiveTheater':
+                        case 'archive':
                             commands.archiveTheater(arg, message);
                             break;
                     }
@@ -119,7 +119,7 @@ client.on('message', message => {
                     case 'theaters':
                         commands.theaters(message);
                         break;
-                    case 'viewTheater':
+                    case 'details':
                         commands.viewTheater(arg, message);
                         break;
                     case 'schedule':
@@ -187,7 +187,7 @@ commands.theaters = function(message) {
     //  !theaters
     var data = "List of active theaters:";
     activeTheaters.forEach( function(value) {
-        data += "\n\n#" + value + ": \"" + theaters[value].title + "\" scheduled for " + theaters[value].date + " (" + theaters[value].replays.length + " replays)\n       " + theaters[value].desc;
+        data += "\n\n#" + value + ": \"**" + theaters[value].title + "**\" scheduled for " + moment(theaters[value].date).format("MMMM Do") + " (" + theaters[value].replays.length + " replays)\n       " + theaters[value].desc;
     });
 
     data += "\n\nFor information on inactive theaters, please check the site";
@@ -199,7 +199,7 @@ commands.viewTheater = function(arg, message) {
     if(arg < theaters.length) {
         //  valid id
         var run = theaters[arg];
-        var data = "\"" + run.title + "\" ( " + run.date + ")\n*" + run.desc + "*\n\n";
+        var data = "\"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
         run.replays.forEach( function (value, index) {
             data += value.user + ": " + value.game + "\n";
         });
@@ -369,16 +369,16 @@ commands.add = function(args, message) {
 
 commands.help = function(message) {
     var msg =   "Host Commands:\n\n" +
-                " - !createTheater date title\n" + 
-                " - !setTheaterDesc id description\n" + 
-                " - !showTheater id\n" + 
-                " - !unshowTheater id\n" + 
-                " - !archiveTheater vodurl\n" +
+                " - !create date title *(create a theater)*\n" + 
+                " - !setdesc id description *(set a theater description)*\n" + 
+                " - !show id *(close submissions and schedule theater for showing)*\n" + 
+                " - !unshow id *(undo show)*\n" + 
+                " - !archive url *(set the VOD link and archive a theater)*\n" +
                 "\nCommands:\n\n" +
-                " - !theaters\n" +
-                " - !viewTheater id\n" +
-                " - !schedule\n" +
-                " - !add link description\n";
+                " - !theaters *(list theaters with open submissions)*\n" +
+                " - !details id *(get details about a theater)*\n" +
+                " - !schedule *(view open theaters, or check submissions for a theater being shown)*\n" +
+                " - !add link description\n *(submit)*";
     sendMessage(message, msg);
 }
 
