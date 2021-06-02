@@ -83,10 +83,10 @@ client.on('message', (channel, user, message, self) => {
             if(channel == channels.theatre) {
                 switch (args[0]) {
                     case 'discord':
-                        sendMessageToChannel('!discord', channel, discord_spam);
+                        sendMessageToChannel(channel, discord_spam);
                         break;
                     case 'schedule':
-                        sendMessageToChannel('!schedule', channel, Maribel.getSchedule());
+                        sendMessageToChannel(channel, Maribel.getSchedule());
                         break;
                 }
             }

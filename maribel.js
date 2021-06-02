@@ -35,6 +35,13 @@ module.exports = {
         client.login(config.maribel.token);
         theaters = loadFromJson('theaters');
         gameList = loadFromJson('games');
+        try {
+            a = fs.statSync("./currentSchedule.json");
+            currentSchedule = loadFromJson('currentSchedule');
+          }
+          catch (e) {
+            currentSchedule = -1;
+          }
         generateActiveTheaterCache();
     },
 
@@ -228,9 +235,9 @@ commands.scheduleTwitch = function() {
         var run = theaters[currentSchedule];
         run.replays.forEach(function(current) {
             text += current.shortgame;
-            text += " |";
+            text += " | ";
         });
-        text.pop();
+        text = text.slice(0, text.length - 3);
         text += " Full schedule: https://raviddog.site/schedule";
         return text;
     } else {
@@ -427,6 +434,7 @@ function isVIP(id) {
 
 function save() {
     saveToJson("theaters", theaters);
+    saveToJson("currentSchedule", currentSchedule);
 }
 
 function saveBackup() {
@@ -457,14 +465,6 @@ function saveToJson(filename, data) {
                 // log(`Saved ${fullFilename} to disk`);
             }
     });
-    // fs.writeFile(backupFile, JSON.stringify(data),
-    //     function(err) {
-    //         if (err) {
-    //             log(err);
-    //         } else {
-    //             // log(`Saved ${fullFilename} to disk`);
-    //         }
-    // });
 }
 
 function sendMessage(message, reply) {
