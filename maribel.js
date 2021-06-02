@@ -187,7 +187,7 @@ commands.theaters = function(message) {
     //  !theaters
     var data = "List of active theaters:";
     activeTheaters.forEach( function(value) {
-        data += "\n\n#" + value + ": \"" + theaters[value].title + "\" (" + theaters[value].replays.length + " replays)\n     " + theaters[value].desc;
+        data += "\n\n#" + value + ": \"" + theaters[value].title + "\" scheduled for " + theaters[value].date + " (" + theaters[value].replays.length + " replays)\n       " + theaters[value].desc;
     });
 
     data += "\n\nFor information on inactive theaters, please check the site";
@@ -199,13 +199,14 @@ commands.viewTheater = function(arg, message) {
     if(arg < theaters.length) {
         //  valid id
         var run = theaters[arg];
-        var data = "Theater: \"" + run.title + "\"\n*" + run.desc + "*\n\n";
+        var data = "\"" + run.title + "\" ( " + run.date + ")\n*" + run.desc + "*\n\n";
         run.replays.forEach( function (value, index) {
             data += value.user + ": " + value.game + "\n";
         });
         sendMessage(message, data);
     }
 }
+
 commands.schedule = function(message) {
     //  view discord formatted schedule
     //  picks between theaters or viewtheater command based on if anything is scheduled
