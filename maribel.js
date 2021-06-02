@@ -33,19 +33,23 @@ var Renko = null;
 module.exports = {
     initialize: function() {
         client.login(config.maribel.token);
+        theaters = loadFromJson('theaters');
+        gameList = loadFromJson('games');
         generateActiveTheaterCache();
     },
+
     setRenko: function(r) {
         Renko = r;
+    },
+
+    getSchedule: function() {
+        //  return twitch formatted schedule
     }
 }
 
 var theaters = [];
 var activeTheaters = [];
 var currentSchedule = -1;
-
-theaters = loadFromJson('theaters');
-gameList = loadFromJson('games');
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);    
@@ -171,7 +175,6 @@ commands.createTheater = function(args, message) {
         var showDate = moment(theater.date, "YYYY-MM-DD").format("MMMM Do YYYY");
         sendMessage(message, "Created Theater #" + theaters.length + ": \"" + theater.title + "\" by " + theater.host + ", scheduled for " + showDate);
         theaters.push(theater);
-        save();
         generateActiveTheaterCache();
 
     } else {
@@ -222,6 +225,7 @@ commands.removeTheater = function(arg, message) {
         saveBackup();
         var run = theaters.splice(arg, 1);
         sendMessage(message, "Removed \"" + run.title + "\"");
+        generateActiveTheaterCache();
     } else {
         sendMessage(message, "Invalid theater ID");
     }
@@ -378,6 +382,7 @@ commands.help = function(message) {
 }
 
 function generateActiveTheaterCache() {
+    save();
     activeTheaters = [];
     theaters.forEach( function (value, index) {
         if(value.active) {
