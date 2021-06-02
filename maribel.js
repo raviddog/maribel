@@ -205,17 +205,12 @@ commands.viewTheater = function(arg, message) {
 }
 commands.schedule = function(message) {
     //  view discord formatted schedule
+    //  picks between theaters or viewtheater command based on if anything is scheduled
     if(currentSchedule != -1) {
-        //  this is the same as viewtheater but with a slight text change
-        //  not sure how to combine them and dont particularly care
-        var run = theaters[currentSchedule];
-        var data = "Next scheduled theater: \"" + run.title + "\"\n*" + run.desc + "*\n\n";
-        run.replays.forEach( function (value, index) {
-            data += value.user + ": " + value.game + "\n";
-        });
-        sendMessage(message, data);
+        commands.viewTheater(currentSchedule, message);
     } else {
-        sendMessage(message, "No theater scheduled at this moment");
+        //  show list of current active theaters
+        commands.theaters(message);
     }
 }
 
