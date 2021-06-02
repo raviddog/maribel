@@ -44,6 +44,7 @@ module.exports = {
 
     getSchedule: function() {
         //  return twitch formatted schedule
+        return commands.scheduleTwitch();
     }
 }
 
@@ -215,6 +216,26 @@ commands.schedule = function(message) {
     } else {
         //  show list of current active theaters
         commands.theaters(message);
+    }
+}
+
+commands.scheduleTwitch = function() {
+    //  twitch version of schedule
+    //  gonna copy paste of the shit out of this code
+    if(currentSchedule != -1) {
+        //  theater scheduled
+        var text = "Schedule: ";
+        var run = theaters[currentSchedule];
+        run.replays.forEach(function(current) {
+            text += current.shortgame;
+            text += " |";
+        });
+        text.pop();
+        text += " Full schedule: https://raviddog.site/schedule";
+        return text;
+    } else {
+        //  no theater scheduled
+        return "No theater currently in progress, check the discord for more information";
     }
 }
 

@@ -24,43 +24,25 @@ const client = new tmi.Client({
     channels: channels.all
 });
 
-// console.log("config is",config.renko,config.renko.username);
 var Maribel = null;
 
 module.exports = {
-    initialize: function(isDebug) {
-        if (isDebug) {
-            return; // don't connect
-        }
+    initialize: function() {
         client.connect()
             .then(() => console.log("connected"))
             .catch(console.error)
     },
+
     setMaribel: function(m) {
         Maribel = m;
-    },
-    sendMessage: function(channelName, message) {
-        sendMessageToChannel(channelName, message);
     }
 }
-
 
 var discord_spam = "Join the TRT community: https://discord.gg/4KsV6pw";
 
-
-var spammyMode = true;
-var enabled = false;
-var theaterMode = false;
 var msgCount = 0;
 var DISCORD_SPAM_DELAY = 1000 * 60 * 10;
 var timer;
-
-var COMMAND_QUOTAS = {
-    default: {
-        wait: 3000
-        // messageCount: 20
-    }
-}
 
 client.on('connected', (address) => {
     console.log('Connected to ' + address);
@@ -69,15 +51,13 @@ client.on('connected', (address) => {
     timer = setInterval(discordTimer, DISCORD_SPAM_DELAY);
 });
 
-client.on("logon", function(x) {
-    console.log("login invoked");
-})
+// client.on("logon", function(x) {
+//     console.log("login invoked");
+// })
 
-client.on('error', function(err) {
-    console.log(this.arguments);
-});
-
-// client.on("raw_message", console.log);
+// client.on('error', function(err) {
+//     console.log(this.arguments);
+// });
 
 client.on('message', (channel, user, message, self) => {
     if(self) return;
@@ -102,14 +82,11 @@ client.on('message', (channel, user, message, self) => {
             }
             if(channel == channels.theatre) {
                 switch (args[0]) {
-                    case 'submit':
-                        sendQuotaMessageToChannel('!submit', channel, "For now, use our discord channel to submit replays. "+discord_spam);
-                        break;
                     case 'discord':
-                        sendQuotaMessageToChannel('!discord', channel, discord_spam);
+                        sendMessageToChannel('!discord', channel, discord_spam);
                         break;
                     case 'schedule':
-                        sendQuotaMessageToChannel('!schedule', channel, Maribel.getSchedule());
+                        sendMessageToChannel('!schedule', channel, Maribel.getSchedule());
                         break;
                 }
             }
@@ -122,43 +99,10 @@ client.on('message', (channel, user, message, self) => {
 });
 
 function sendMessageToChannel(channelName, message) {
-    // TODO: put limits and such on this?
     if (channelName.substring(0,1) != '#') {
         channelName = '#' + channelName;
     }
     client.say(channelName, message).catch(console.error);
-}
-
-function sendQuotaMessageToChannel(command, channelName, message) {
-    if (!COMMAND_QUOTAS[command]) {
-        COMMAND_QUOTAS[command] = Object.assign({}, COMMAND_QUOTAS['default']); // use the default
-    }
-    let quota = COMMAND_QUOTAS[command];
-    
-    if (quota.wait) {
-        if (quota.lastSent && (Date.now()-quota.lastSent) < quota.wait) {
-            console.log('too fast ignoring command',command);
-            return;
-        }
-    }
-    quota.lastSent = Date.now();
-    console.log(COMMAND_QUOTAS);
-    setTimeout(function() {
-        sendMessageToChannel(channelName, message);
-    }, randomInt(1000,3000));
-    
-}
-
-function randomInt(a,b) {
-    return a + Math.floor(Math.random()*(b-a));
-}
-
-function sendNotImplemented(channel, commandName) {
-    sendQuotaMessageToChannel('notImplemented', channel, `The ${commandName} command is not implemented. Scream at Baka to fix.`);
-}
-
-function getDateTime() {
-    return (new Date()).toISOString();
 }
 
 function discordTimer() {
