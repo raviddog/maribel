@@ -127,6 +127,9 @@ client.on('message', message => {
                         case 'archive':
                             commands.archiveTheater(arg, message);
                             break;
+                        case `deleteTheater`:
+                            commands.removeTheater(arg, message);
+                            break;
                     }
                 }
 
@@ -218,7 +221,7 @@ commands.viewTheater = function(arg, message) {
     if(arg < theaters.length) {
         //  valid id
         var run = theaters[arg];
-        var data = "\"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
+        var data = "#" + arg + ": \"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
         run.replays.forEach( function (value, index) {
             data += "#" + index + ": " + value.user + " - " + value.game + "\n";
         });
@@ -444,6 +447,7 @@ commands.help = function(message) {
                 " - !show id *(close submissions and schedule theater for showing)*\n" + 
                 " - !unshow id *(undo show)*\n" + 
                 " - !archive url *(set the VOD link and archive a theater)*\n" +
+                " - !deleteTheater id *(deletes a theater)*\n" +
                 "\nCommands:\n\n" +
                 " - !theaters *(list theaters with open submissions)*\n" +
                 " - !details id *(get details about a theater)*\n" +
