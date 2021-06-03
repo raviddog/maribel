@@ -4,13 +4,14 @@ let moment = require('moment');
 
 var fs = require('fs');
 var https = require('https');
-// const sslcert = require('./ssl.json');
-// var privateKey  = fs.readFileSync(sslcert.ssl.key, 'utf8');
-// var certificate = fs.readFileSync(sslcert.ssl.cert, 'utf8');
-// var cart = fs.readFileSync(sslcert.ssl.ca, 'utf8');
-// var credentials = {key: privateKey, cert: certificate, ca: cart};
+const sslcert = require('./ssl.json');
+var privateKey  = fs.readFileSync(sslcert.ssl.key, 'utf8');
+var certificate = fs.readFileSync(sslcert.ssl.cert, 'utf8');
+var cart = fs.readFileSync(sslcert.ssl.ca, 'utf8');
+var credentials = {key: privateKey, cert: certificate, ca: cart};
 
 var Maribel = null;
+var httpsServer;
 
 module.exports = {
 	setMaribel: function(x) {
@@ -18,7 +19,9 @@ module.exports = {
 	},
 
 	initialize: function() {
-		app.listen(3000);
+		// app.listen(3000);
+		httpsServer = https.createServer(credentials, app);
+		httpsServer.listen(4443);
 	}
 };
 
@@ -74,5 +77,4 @@ app.get('/schedule', function(req, res) {
 
 
 
-// var httpsServer = https.createServer(credentials, app);
-// httpsServer.listen(4443);
+
