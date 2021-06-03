@@ -52,6 +52,14 @@ module.exports = {
     getSchedule: function() {
         //  return twitch formatted schedule
         return commands.scheduleTwitch();
+    },
+
+    getWebSchedule: function() {
+
+    },
+
+    getWebArchive: function() {
+
     }
 }
 
@@ -139,6 +147,9 @@ client.on('message', message => {
                     case 'help':
                         commands.help(message);
                         break;
+                    case 'remove':
+                        commands.remove(args, message);
+                        break;
                 }  
             }
         }
@@ -209,7 +220,7 @@ commands.viewTheater = function(arg, message) {
         var run = theaters[arg];
         var data = "\"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
         run.replays.forEach( function (value, index) {
-            data += value.user + ": " + value.game + "\n";
+            data += "#" + index + ": " + value.user + " - " + value.game + "\n";
         });
         sendMessage(message, data);
     }
@@ -395,6 +406,37 @@ commands.add = function(args, message) {
     }
 }
 
+commands.remove = function(args, message) {
+    //  !remove 15 7
+    if(args.length > 2) {
+        if(args[1] < theaters.length) {
+            var t = theaters[args[1]];
+            if(t.active) {
+                if(args[2] < t.replays.length) {
+                    var r = t.replays[args[2]];
+                    var msg = message.channel.messages.fetch(r.msgid).catch(console.log);
+                    if(message.author.id === msg.author.id || isVIP(message.author.id)) {
+                        //  passed all the checks lol
+                        saveBackup();
+                        var removed = t.replays.splice(args[2], 1);
+                        sendMessage(message, "Removed \"" + removed.game + "\"");
+                    } else {
+                        sendMessage(message, "You cannot remove someone else's replay");
+                    }
+                } else {
+                    sendMessage(message, "Invalid replay ID provided");
+                }
+            } else {
+                sendMessage(message, "You cannot remove replays from a theater that has been shown");
+            }
+        } else {
+            sendMessage(message, "Invalid theater ID provided");
+        }
+    } else {
+        sendMessage(message, "Not enough arguments provided");
+    }
+}
+
 commands.help = function(message) {
     var msg =   "Host Commands:\n\n" +
                 " - !create date title *(create a theater)*\n" + 
@@ -406,7 +448,8 @@ commands.help = function(message) {
                 " - !theaters *(list theaters with open submissions)*\n" +
                 " - !details id *(get details about a theater)*\n" +
                 " - !schedule *(view open theaters, or check submissions for a theater being shown)*\n" +
-                " - !add link description\n *(submit)*";
+                " - !add link description *(submit)*\n" +
+                " - !remove theatreID replayID *(remove a replay you submitted)";
     sendMessage(message, msg);
 }
 
