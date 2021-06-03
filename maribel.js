@@ -55,11 +55,11 @@ module.exports = {
     },
 
     getWebSchedule: function() {
-
+        return theaters;
     },
 
-    getWebArchive: function() {
-
+    getScheduleID: function() {
+        return currentSchedule;
     }
 }
 
@@ -172,7 +172,7 @@ commands.createTheater = function(args, message) {
     //  !createTheater date title
     if(args.length > 2) {
         var theater = {
-            date : moment(args[1]),
+            date : moment(args[1], "YYYY-MM-DD"),
             host : message.author.tag,
             title : "",
             desc : "No description",
@@ -226,6 +226,8 @@ commands.viewTheater = function(arg, message) {
             data += "#" + index + ": " + value.user + " - " + value.game + "\n";
         });
         sendMessage(message, data);
+    } else {
+        sendMessage(message, "Invalid theater id");
     }
 }
 
@@ -322,6 +324,10 @@ commands.submitReplay = function(link, filename, desc, message) {
 
     if(activeTheaters.length > 1) {
         //  TODO gotta query for which theater to add to
+        theaters[activeTheaters[0]].replays.push(replay);
+        save();
+        sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
+        sendMessage(message, "Currently you can only submit replays to the first theater. Will be fixed shortly.");
     } else if(activeTheaters.length == 1) {
         theaters[activeTheaters[0]].replays.push(replay);
         save();
@@ -389,9 +395,9 @@ commands.archiveTheater = function(arg, message) {
 
 commands.add = function(args, message) {
     //  !add link desc
-     if(args.length > 2) {
+     if(args.length > 1) {
         var desc = "";
-        if(args.length > 3) {
+        if(args.length > 2) {
             desc = args[2];
             args.forEach( function (value, index) {
                 if(index > 2) {
@@ -493,7 +499,7 @@ function loadFromJson(filename) {
     let result = [];
     try {
         let data = fs.readFileSync(fullFilename);
-        result = JSON.parse(data)
+        result = JSON.parse(data);
     } catch (err) {
         console.log(err);
         // result = [];
@@ -503,7 +509,6 @@ function loadFromJson(filename) {
 
 function saveToJson(filename, data) {
     let fullFilename = filename + '.json';
-    let backupFile = filename + Date.now() + '.json';
     fs.writeFile(fullFilename, JSON.stringify(data),
         function(err) {
             if (err) {

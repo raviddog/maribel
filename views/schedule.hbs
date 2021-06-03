@@ -16,38 +16,40 @@
 	</style>
 </head>
 <body>
-<h1>TRT Even Less Beta Replay Schedule Listing</h1>
-<p>This is the schedule page for Touhou Replay Theater, hosted every Sunday 7PM PST at <a href="https://www.twitch.tv/touhou_replay_theater">TRT</a>.</p>
+<h1>TRT Probably Functional Schedule Listing</h1>
+<p>This is the schedule page for Touhou Replay Theater, hosted every <strike>Sunday 7PM PST</strike> whenever at <a href="https://www.twitch.tv/touhou_replay_theater">TRT</a>.</p>
+
 <p>
-	{{#if allFlag}}
-		<a href="/schedule">View unshown replays.</a>
+	{{#if archive}}
+		You are viewing archived theaters. <a href="/schedule">View upcoming theaters.</a>
 	{{else}}
-		<a href="/schedule?all=1">View all replays.</a>
+		You are viewing upcoming theaters. <a href="/schedule?archive=1">View archived theaters.</a>
 	{{/if}}
 </p>
+
 {{#each theaters}}
-<h3>{{this.display_date}}</h3>
+<h3>#{{this.id}}: {{this.title}} - {{this.datetext}}</h3>
+{{#if archive}}{{this.vod}}<br>{{/if}}{{this.desc}}<br>
 <table>
 	<thead>
 		<tr>
-			<th>ID</th>
 			<th>User</th>
-			<th>URL</th>
+			<th>Run Info</th>
 			<th>Notes</th>
+			<th>URL</th>
 		</tr>
 	</thead>
 	<tbody>
 		{{#each this.replays}}
 		<tr>
-			<td>{{this.id}}</td>
 			<td>{{this.user}}</td>
-			<td><a href="{{this.url}}">{{this.url}}</a></td>
+			<td>{{this.game}}</td>
 			<td>{{this.notes}}</td>
+			<td><a href="{{this.url}}">{{this.url}}</a></td>
 		</tr>
 		{{/each}}
 	</tbody>
 </table>
 {{/each}}
-<pre>Page generated at: {{timestamp}}</pre>
 </body>
 </html>
