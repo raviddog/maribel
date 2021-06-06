@@ -35,13 +35,6 @@ module.exports = {
         client.login(config.maribel.token);
         theaters = loadFromJson('theaters');
         gameList = loadFromJson('games');
-        try {
-            a = fs.statSync("./currentSchedule.json");
-            currentSchedule = loadFromJson('currentSchedule');
-          }
-          catch (e) {
-            currentSchedule = -1;
-          }
         generateActiveTheaterCache();
     },
 
@@ -51,15 +44,6 @@ module.exports = {
 
     getSchedule: function() {
         //  return twitch formatted schedule
-        return commands.scheduleTwitch();
-    },
-
-    getWebSchedule: function() {
-        return theaters;
-    },
-
-    getScheduleID: function() {
-        return currentSchedule;
     }
 }
 
@@ -72,6 +56,13 @@ client.on('ready', () => {
     client.user.setActivity(config.maribel.game, {type : 'PLAYING'});
 });
 
+var responseQueue = {
+    list = [],
+    queue = []
+}
+
+const reactions = ['zeeo','one','two','three','four','five','six','seven','eight','nine'];
+
 // delete replay if submitter deletes their original message
 // client.on('messageDelete', message => {
 //     var index = replays.findIndex(replay => replay.msgid == message.id);
@@ -82,9 +73,41 @@ client.on('ready', () => {
 //     }
 // });
 
+client.on('messageReactionAdd', (reaction, user) => {
+    var message = reaction.message;
+    if(message.author.id == client.user.id) {
+        var index = responseQueue.list.find(value => value === message.id.toString());
+        try {
+            if(index) {
+                var target = reacrions.find(reaction.name);
+                if(target) {
+                    theaters[activeTheaters[target]].replays.push(replay);
+                    save();
+                    responseQueue.queue.splice(index, 1);
+                    responseQueue.list.splice(index, 1);
+                    sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
+                }
+            }
+        } catch(e) {
+            
+        }
+    }
+});
+
 client.on('message', message => {
-    // ignore bots messages
-    if(message.author.id == client.user.id) return;
+    // test bot message for further action needed
+    if(message.author.id == client.user.id) {
+        var index = responseQueue.list.find(value => value === message.content.toString());
+        try {
+            if(index) {
+                message.edit(responseQueue.queue[index].text);
+                responseQueue.list[index] = message.id;
+                responseQueue.queue[index].reaction.forEach(value => message.react(value));
+            }
+        } catch(e) {
+            
+        }
+    }
 
     // add attachments as replays
     if(isChannel(message.channel.id)) {
@@ -111,7 +134,7 @@ client.on('message', message => {
                 // master/VIP commands
                 
                 if (isMaster(message.author.id) || isVIP(message.author.id)) {
-                    switch (command) {
+                    switch (command) {ur
                         case 'create':
                             commands.createTheater(args, message);
                             break;
@@ -126,9 +149,6 @@ client.on('message', message => {
                             break;
                         case 'archive':
                             commands.archiveTheater(arg, message);
-                            break;
-                        case `deleteTheater`:
-                            commands.removeTheater(arg, message);
                             break;
                     }
                 }
@@ -150,9 +170,6 @@ client.on('message', message => {
                     case 'help':
                         commands.help(message);
                         break;
-                    case 'remove':
-                        commands.remove(args, message);
-                        break;
                 }  
             }
         }
@@ -172,7 +189,7 @@ commands.createTheater = function(args, message) {
     //  !createTheater date title
     if(args.length > 2) {
         var theater = {
-            date : moment(args[1], "YYYY-MM-DD"),
+            date : moment(args[1]),
             host : message.author.tag,
             title : "",
             desc : "No description",
@@ -221,13 +238,11 @@ commands.viewTheater = function(arg, message) {
     if(arg < theaters.length) {
         //  valid id
         var run = theaters[arg];
-        var data = "#" + arg + ": \"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
+        var data = "\"**" + run.title + "**\" ( " + moment(run.date).format("MMMM Do") + ")\n*" + run.desc + "*\n\n";
         run.replays.forEach( function (value, index) {
-            data += "#" + index + ": " + value.user + " - " + value.game + "\n";
+            data += value.user + ": " + value.game + "\n";
         });
         sendMessage(message, data);
-    } else {
-        sendMessage(message, "Invalid theater id");
     }
 }
 
@@ -239,26 +254,6 @@ commands.schedule = function(message) {
     } else {
         //  show list of current active theaters
         commands.theaters(message);
-    }
-}
-
-commands.scheduleTwitch = function() {
-    //  twitch version of schedule
-    //  gonna copy paste of the shit out of this code
-    if(currentSchedule != -1) {
-        //  theater scheduled
-        var text = "Schedule: ";
-        var run = theaters[currentSchedule];
-        run.replays.forEach(function(current) {
-            text += current.shortgame;
-            text += " | ";
-        });
-        text = text.slice(0, text.length - 3);
-        text += " Full schedule: https://raviddog.site/schedule";
-        return text;
-    } else {
-        //  no theater scheduled
-        return "No theater currently in progress, check the discord for more information";
     }
 }
 
@@ -324,10 +319,25 @@ commands.submitReplay = function(link, filename, desc, message) {
 
     if(activeTheaters.length > 1) {
         //  TODO gotta query for which theater to add to
-        theaters[activeTheaters[0]].replays.push(replay);
-        save();
-        sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
-        sendMessage(message, "Currently you can only submit replays to the first theater. Will be fixed shortly.");
+        
+        //  get tge is of this message somehow
+        //  send a message with the desired id as text
+        responseQueue.list.push(message.id);
+        var text = 'Select a theater to submit to:';
+        var reacts = [];
+        activeTheaterseaters.forEach(function(value, index) {
+            text += '\n\n#' + index + ': \"' + value.title + '\"';
+            if(index < reactions.length) {
+                reacts.push(reactions);
+            }
+        });
+        var queue = {
+            replay : replay,
+            text : text,
+            reaction = reacts
+        }
+        responseQueue.queue.push(queue);
+        sendMessage(message, message.id.toString());
     } else if(activeTheaters.length == 1) {
         theaters[activeTheaters[0]].replays.push(replay);
         save();
@@ -395,9 +405,9 @@ commands.archiveTheater = function(arg, message) {
 
 commands.add = function(args, message) {
     //  !add link desc
-     if(args.length > 1) {
+     if(args.length > 2) {
         var desc = "";
-        if(args.length > 2) {
+        if(args.length > 3) {
             desc = args[2];
             args.forEach( function (value, index) {
                 if(index > 2) {
@@ -415,37 +425,6 @@ commands.add = function(args, message) {
     }
 }
 
-commands.remove = function(args, message) {
-    //  !remove 15 7
-    if(args.length > 2) {
-        if(args[1] < theaters.length) {
-            var t = theaters[args[1]];
-            if(t.active) {
-                if(args[2] < t.replays.length) {
-                    var r = t.replays[args[2]];
-                    var msg = message.channel.messages.fetch(r.msgid).catch(console.log);
-                    if(message.author.id === msg.author.id || isVIP(message.author.id)) {
-                        //  passed all the checks lol
-                        saveBackup();
-                        var removed = t.replays.splice(args[2], 1);
-                        sendMessage(message, "Removed \"" + removed.game + "\"");
-                    } else {
-                        sendMessage(message, "You cannot remove someone else's replay");
-                    }
-                } else {
-                    sendMessage(message, "Invalid replay ID provided");
-                }
-            } else {
-                sendMessage(message, "You cannot remove replays from a theater that has been shown");
-            }
-        } else {
-            sendMessage(message, "Invalid theater ID provided");
-        }
-    } else {
-        sendMessage(message, "Not enough arguments provided");
-    }
-}
-
 commands.help = function(message) {
     var msg =   "Host Commands:\n\n" +
                 " - !create date title *(create a theater)*\n" + 
@@ -453,13 +432,11 @@ commands.help = function(message) {
                 " - !show id *(close submissions and schedule theater for showing)*\n" + 
                 " - !unshow id *(undo show)*\n" + 
                 " - !archive url *(set the VOD link and archive a theater)*\n" +
-                " - !deleteTheater id *(deletes a theater)*\n" +
                 "\nCommands:\n\n" +
                 " - !theaters *(list theaters with open submissions)*\n" +
                 " - !details id *(get details about a theater)*\n" +
                 " - !schedule *(view open theaters, or check submissions for a theater being shown)*\n" +
-                " - !add link description *(submit)*\n" +
-                " - !remove theatreID replayID *(remove a replay you submitted)";
+                " - !add link description\n *(submit)*";
     sendMessage(message, msg);
 }
 
@@ -487,7 +464,6 @@ function isVIP(id) {
 
 function save() {
     saveToJson("theaters", theaters);
-    saveToJson("currentSchedule", currentSchedule);
 }
 
 function saveBackup() {
@@ -499,7 +475,7 @@ function loadFromJson(filename) {
     let result = [];
     try {
         let data = fs.readFileSync(fullFilename);
-        result = JSON.parse(data);
+        result = JSON.parse(data)
     } catch (err) {
         console.log(err);
         // result = [];
@@ -509,6 +485,7 @@ function loadFromJson(filename) {
 
 function saveToJson(filename, data) {
     let fullFilename = filename + '.json';
+    let backupFile = filename + Date.now() + '.json';
     fs.writeFile(fullFilename, JSON.stringify(data),
         function(err) {
             if (err) {
@@ -517,6 +494,14 @@ function saveToJson(filename, data) {
                 // log(`Saved ${fullFilename} to disk`);
             }
     });
+    // fs.writeFile(backupFile, JSON.stringify(data),
+    //     function(err) {
+    //         if (err) {
+    //             log(err);
+    //         } else {
+    //             // log(`Saved ${fullFilename} to disk`);
+    //         }
+    // });
 }
 
 function sendMessage(message, reply) {
