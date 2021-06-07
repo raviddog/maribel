@@ -44,6 +44,11 @@ module.exports = {
 
     getSchedule: function() {
         //  return twitch formatted schedule
+        return theaters;
+    },
+
+    getScheduleID: function() {
+        return currentSchedule;
     }
 }
 
@@ -57,11 +62,11 @@ client.on('ready', () => {
 });
 
 var responseQueue = {
-    list = [],
-    queue = []
+    list : [],
+    queue : []
 }
 
-const reactions = ['zeeo','one','two','three','four','five','six','seven','eight','nine'];
+const reactions = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
 
 // delete replay if submitter deletes their original message
 // client.on('messageDelete', message => {
@@ -74,22 +79,25 @@ const reactions = ['zeeo','one','two','three','four','five','six','seven','eight
 // });
 
 client.on('messageReactionAdd', (reaction, user) => {
+    if(user.id == client.user.id) {
+        return;
+    }
     var message = reaction.message;
     if(message.author.id == client.user.id) {
-        var index = responseQueue.list.find(value => value === message.id.toString());
-        try {
-            if(index) {
-                var target = reacrions.find(reaction.name);
-                if(target) {
+        var index = responseQueue.list.indexOf(message.id);
+        if(index > -1) {
+            var target = reactions.indexOf(reaction.emoji.name);
+            if(target > -1) {
+                var replay = responseQueue.queue[index].replay;
+                if(user.tag === replay.user) {
                     theaters[activeTheaters[target]].replays.push(replay);
                     save();
                     responseQueue.queue.splice(index, 1);
                     responseQueue.list.splice(index, 1);
-                    sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
+                    sendMessage(message, "Added replay to \"" + theaters[activeTheaters[target]].title + "\"");
+                    message.delete();
                 }
             }
-        } catch(e) {
-            
         }
     }
 });
@@ -97,15 +105,11 @@ client.on('messageReactionAdd', (reaction, user) => {
 client.on('message', message => {
     // test bot message for further action needed
     if(message.author.id == client.user.id) {
-        var index = responseQueue.list.find(value => value === message.content.toString());
-        try {
-            if(index) {
-                message.edit(responseQueue.queue[index].text);
-                responseQueue.list[index] = message.id;
-                responseQueue.queue[index].reaction.forEach(value => message.react(value));
-            }
-        } catch(e) {
-            
+        var index = responseQueue.list.indexOf(message.content.toString());
+        if(index > -1) {
+            message.edit(responseQueue.queue[index].text);
+            responseQueue.queue[index].reaction.forEach(value => message.react(value));
+            responseQueue.list[index] = message.id;
         }
     }
 
@@ -134,7 +138,7 @@ client.on('message', message => {
                 // master/VIP commands
                 
                 if (isMaster(message.author.id) || isVIP(message.author.id)) {
-                    switch (command) {ur
+                    switch (command) {
                         case 'create':
                             commands.createTheater(args, message);
                             break;
@@ -323,18 +327,18 @@ commands.submitReplay = function(link, filename, desc, message) {
         //  get tge is of this message somehow
         //  send a message with the desired id as text
         responseQueue.list.push(message.id);
-        var text = 'Select a theater to submit to:';
+        var text = 'Select a theater to submit to:\n';
         var reacts = [];
-        activeTheaterseaters.forEach(function(value, index) {
-            text += '\n\n#' + index + ': \"' + value.title + '\"';
+        activeTheaters.forEach(function(value, index) {
+            text += '\n#' + index + ': \"' + theaters[value].title + '\"';
             if(index < reactions.length) {
-                reacts.push(reactions);
+                reacts.push(reactions[index]);
             }
         });
         var queue = {
             replay : replay,
             text : text,
-            reaction = reacts
+            reaction : reacts
         }
         responseQueue.queue.push(queue);
         sendMessage(message, message.id.toString());
