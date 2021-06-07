@@ -32,7 +32,7 @@ app.set('view engine','hbs')
 
 app.get('/schedule', function(req, res) {
 	//console.log(req.query);
-	var theaters = Maribel.getWebSchedule();
+	var theaters = Maribel.getSchedule();
 	var scheduled = Maribel.getScheduleID();
 	var filtered = [];
 	if(req.query.archive == 1) {
