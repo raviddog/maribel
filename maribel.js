@@ -35,6 +35,7 @@ module.exports = {
         client.login(config.maribel.token);
         theaters = loadFromJson('theaters');
         gameList = loadFromJson('games');
+        currentSchedule = loadFromJson('current');
         generateActiveTheaterCache();
     },
 
@@ -468,6 +469,7 @@ function isVIP(id) {
 
 function save() {
     saveToJson("theaters", theaters);
+    saveToJson("current", currentSchedule);
 }
 
 function saveBackup() {
