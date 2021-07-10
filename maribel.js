@@ -470,10 +470,11 @@ function isVIP(id) {
 function save() {
     saveToJson("theaters", theaters);
     saveToJson("current", currentSchedule);
+    saveBackup();
 }
 
 function saveBackup() {
-    saveToJson("theaters" + Date.now().toString(), theaters);
+    saveToJson("backup/theaters" + Date.now().toString(), theaters);
 }
 
 function loadFromJson(filename) {
@@ -495,7 +496,7 @@ function saveToJson(filename, data) {
     fs.writeFile(fullFilename, JSON.stringify(data),
         function(err) {
             if (err) {
-                log(err);
+                // log(err);
             } else {
                 // log(`Saved ${fullFilename} to disk`);
             }
