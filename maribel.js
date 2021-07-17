@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const client = new Discord.Client({autoReconnect:true});
+const client = new Discord.Client();
 const config = require('./config.json');
 var fs = require('fs');
 
@@ -33,6 +33,7 @@ var Renko = null;
 module.exports = {
     initialize: function() {
         client.login(config.maribel.token);
+        replays = loadFromJson('replays');
         theaters = loadFromJson('theaters');
         gameList = loadFromJson('games');
         currentSchedule = loadFromJson('current');
@@ -53,6 +54,7 @@ module.exports = {
     }
 }
 
+var replays = [];
 var theaters = [];
 var activeTheaters = [];
 var currentSchedule = -1;
@@ -175,6 +177,9 @@ client.on('message', message => {
                     case 'help':
                         commands.help(message);
                         break;
+                    case 'replays':
+                        commands.replays(message);
+                        break;
                 }  
             }
         }
@@ -191,10 +196,10 @@ client.on('message', message => {
 var commands = {};
 
 commands.createTheater = function(args, message) {
-    //  !createTheater date title
-    if(args.length > 2) {
+    //  !createTheater import(#/n) title
+    if(args.length > 3) {
         var theater = {
-            date : moment(args[1]),
+            date : null,
             host : message.author.tag,
             title : "",
             desc : "No description",
@@ -203,21 +208,31 @@ commands.createTheater = function(args, message) {
             replays : []
         };
 
-        //  add title
-        if(args.length > 3) {
-            var desc = args[2];
-            args.forEach( function (value, index) {
-                if(index > 2) {
-                    desc = desc.concat(" ").concat(value);
+        if(args[1] != 'n') {
+            try {
+                var amount = parseInt(args[1]);
+                if(amount < replays.length) {
+                    amount = replays.length;
                 }
-            });
-            theater.title = desc;
-        } else {
-            theater.title = args[2];
+    
+                for(var i = 0; i < amount; i++) {
+                    theater.replays.push(replays[0]);
+                    replays.shift();
+                }
+            } catch {
+                sendMessage(message, "Can't read replay import amount");
+            }
         }
 
-        var showDate = moment(theater.date, "YYYY-MM-DD").format("MMMM Do YYYY");
-        sendMessage(message, "Created Theater #" + theaters.length + ": \"" + theater.title + "\" by " + theater.host + ", scheduled for " + showDate);
+        var desc = args[2];
+        args.forEach( function (value, index) {
+            if(index > 2) {
+                desc = desc.concat(" ").concat(value);
+            }
+        });
+        theater.title = desc;
+    
+        sendMessage(message, "Created Theater #" + theaters.length + ": \"" + theater.title + "\" by " + theater.host);
         theaters.push(theater);
         generateActiveTheaterCache();
 
@@ -258,6 +273,7 @@ commands.schedule = function(message) {
         commands.viewTheater(currentSchedule, message);
     } else {
         //  show list of current active theaters
+        //  show replay backlog
         commands.theaters(message);
     }
 }
@@ -349,7 +365,9 @@ commands.submitReplay = function(link, filename, desc, message) {
         sendMessage(message, "Added replay to \"" + theaters[activeTheaters[0]].title + "\"");
     } else {
         //  no active theaters
-        sendMessage(message, "There are no theaters active to submit to");
+        //  push to replay backlog
+        replays.push(replay);
+        sendMessage(message, "Saved replay to backlog");
     }
 }
 
@@ -362,6 +380,8 @@ commands.showTheater = function(arg, message) {
         });
         if(arg == checkactive) {
             theaters[arg].active = false;
+            theaters[arg].date = moment().format("MMMM Do YYYY");
+
             currentSchedule = arg;
             generateActiveTheaterCache();
             sendMessage(message, "Submissions closed. Theater \"" + theaters[arg].title + "\" is now scheduled.");
@@ -430,15 +450,24 @@ commands.add = function(args, message) {
     }
 }
 
+commands.replays = function(message) {
+    var msg = "Replay backlog: \n\n";
+    replays.forEach( function(value, index) {
+        msg += "#" + index + ": " + value.game + " (" + value.user + ")\n";
+    });
+    sendMessage(message, msg);
+}
+
 commands.help = function(message) {
     var msg =   "Host Commands:\n\n" +
-                " - !create date title *(create a theater)*\n" + 
+                " - !create import(#/n) title *(create a theater, choose to import current replay backlog or not)*\n" + 
                 " - !setdesc id description *(set a theater description)*\n" + 
                 " - !show id *(close submissions and schedule theater for showing)*\n" + 
                 " - !unshow id *(undo show)*\n" + 
                 " - !archive url *(set the VOD link and archive a theater)*\n" +
                 "\nCommands:\n\n" +
                 " - !theaters *(list theaters with open submissions)*\n" +
+                " - !replays *(show uncategorised replay backlog)*\n" +
                 " - !details id *(get details about a theater)*\n" +
                 " - !schedule *(view open theaters, or check submissions for a theater being shown)*\n" +
                 " - !add link description\n *(submit)*";
@@ -470,11 +499,13 @@ function isVIP(id) {
 function save() {
     saveToJson("theaters", theaters);
     saveToJson("current", currentSchedule);
+    saveToJson("replays", replays);
     saveBackup();
 }
 
 function saveBackup() {
     saveToJson("backup/theaters" + Date.now().toString(), theaters);
+    saveToJson("backup/replays" + Date.now().toString(), replays);
 }
 
 function loadFromJson(filename) {
