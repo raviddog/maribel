@@ -145,6 +145,12 @@ client.on('message', message => {
                         case 'create':
                             commands.createTheater(args, message);
                             break;
+                        case 'remove':
+                            commands.remove(arg, message);
+                            break;
+                        case 'removeTheater':
+                            commands.removeTheater(arg, message);
+                            break;
                         case 'setdesc':
                             commands.setTheaterDesc(args, message);
                             break;
@@ -285,7 +291,7 @@ commands.removeTheater = function(arg, message) {
     if(arg < theaters.length) {
         saveBackup();
         var run = theaters.splice(arg, 1);
-        sendMessage(message, "Removed \"" + run.title + "\"");
+        sendMessage(message, "Removed \"" + run[0].title + "\"");
         generateActiveTheaterCache();
     } else {
         sendMessage(message, "Invalid theater ID");
@@ -458,9 +464,20 @@ commands.replays = function(message) {
     sendMessage(message, msg);
 }
 
+commands.remove = function(arg, message) {
+    if(arg < replays.length) {
+        replays.splice(arg, 1);
+        sendMessage(message, "Done");
+    } else {
+        sendMessage(message, "Invalid replay id");
+    }
+}
+
 commands.help = function(message) {
     var msg =   "Host Commands:\n\n" +
                 " - !create import(#/n) title *(create a theater, choose to import current replay backlog or not)*\n" + 
+                " - !remove id *(remove replay from uncategorised backlog)*\n" +
+                " - !removeTheater id *(delete theater, active only)*\n" +
                 " - !setdesc id description *(set a theater description)*\n" + 
                 " - !show id *(close submissions and schedule theater for showing)*\n" + 
                 " - !unshow id *(undo show)*\n" + 
